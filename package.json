@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "content:validate": "tsx scripts/validate-questions.ts",
     "db:seed-sql": "tsx scripts/generate-seed-sql.ts",
-    "db:seed": "tsx scripts/seed-questions.ts"
+    "db:seed": "tsx scripts/seed-questions.ts",
+    "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

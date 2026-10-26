@@ -160,7 +160,7 @@ export async function loadActivity(userDb: SupabaseClient, user: User, opts: { s
     userDb.from("profiles").select("*").eq("id", user.id).maybeSingle(),
     userDb
       .from("match_participants")
-      .select("match_id, score, correct, rank, xp_awarded, multiplayer_matches!inner(finished_at, question_count, human_players, finalized_at, room_id, multiplayer_rooms(code))")
+      .select("match_id, score, correct, rank, xp_awarded, multiplayer_matches!inner(finished_at, question_count, human_players, finalized_at, room_id, multiplayer_rooms!multiplayer_matches_room_id_fkey(code))")
       .not("rank", "is", null)
       .limit(500),
   ]);

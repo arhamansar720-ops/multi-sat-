@@ -286,7 +286,7 @@ function ExamConfigurator() {
                   <Segmented label="Time limit in minutes" value={minutes} onValueChange={setMinutes} options={["15", "30", "45", "60", "90"].map((m) => ({ value: m, label: `${m} min` }))} />
                 </Row>
               )}
-              {mode === "timed" && <p className="text-sm text-muted-foreground">Time limit is set from the questions' estimated times (about 85% of the estimate).</p>}
+              {mode === "timed" && <p className="text-sm text-muted-foreground">Time limit is set from the questions&apos; estimated times (about 85% of the estimate).</p>}
             </CardContent>
           </Card>
         </div>

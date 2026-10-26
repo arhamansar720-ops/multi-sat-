@@ -53,7 +53,9 @@ export function ExamRunner({ loaded }: { loaded: LoadedSession }) {
 
   // Clock tick + per-question time tracking (only while the tab is visible).
   const draftRef = React.useRef(draft);
-  draftRef.current = draft;
+  React.useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
   React.useEffect(() => {
     let last = Date.now();
     const t = window.setInterval(() => {
