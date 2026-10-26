@@ -1,0 +1,206 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "ap-csp-u2-001",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 2: Data",
+      "topic": "Binary numbers",
+      "skill": "Converting binary to decimal",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "What is the decimal (base 10) value of the binary number $101101_2$?",
+      "correct": [
+        "45"
+      ],
+      "explanation": "Each binary digit represents a power of 2. From left to right, $101101_2 = 1(32) + 0(16) + 1(8) + 1(4) + 0(2) + 1(1) = 32 + 8 + 4 + 1 = 45$.",
+      "hint": "Write the place values 32, 16, 8, 4, 2, 1 above the digits.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "binary"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-csp-u2-002",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 2: Data",
+      "topic": "Data compression",
+      "skill": "Lossless vs. lossy compression",
+      "difficulty": "medium",
+      "type": "multi",
+      "prompt": "Which of the following are advantages of lossless compression compared with lossy compression? Select two answers.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "The original data can be reconstructed exactly from the compressed data."
+        },
+        {
+          "id": "B",
+          "text": "It always produces smaller files than lossy compression."
+        },
+        {
+          "id": "C",
+          "text": "It is appropriate for data such as text documents and program files, where every bit matters."
+        },
+        {
+          "id": "D",
+          "text": "It removes details that people are unlikely to notice."
+        }
+      ],
+      "correct": [
+        "A",
+        "C"
+      ],
+      "explanation": "Lossless compression allows perfect reconstruction of the original data, which is essential for text, source code, and other files where any change would corrupt the content. Lossy compression usually achieves smaller files (so B is false) by discarding details people are unlikely to notice, which describes lossy rather than lossless compression (D).",
+      "estimatedSeconds": 70,
+      "tags": [
+        "compression",
+        "select two"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-csp-u4-001",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 4: Computer Systems and Networks",
+      "topic": "The internet",
+      "skill": "Domain Name System",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "Which of the following best describes the role of the Domain Name System (DNS)?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "It encrypts data sent between a browser and a web server."
+        },
+        {
+          "id": "B",
+          "text": "It translates human-readable domain names into IP addresses."
+        },
+        {
+          "id": "C",
+          "text": "It divides data into packets for transmission."
+        },
+        {
+          "id": "D",
+          "text": "It assigns physical MAC addresses to network hardware."
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "DNS works like a directory: when you type a domain name, DNS servers return the numeric IP address that devices use to route requests. Encryption is handled by protocols such as TLS, packets are created by protocols such as TCP/IP, and MAC addresses are built into hardware.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "DNS",
+        "internet"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-csp-u3-001",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 3: Algorithms and Programming",
+      "topic": "Iteration",
+      "skill": "Tracing code with loops",
+      "difficulty": "medium",
+      "type": "numeric",
+      "prompt": "Consider the following code segment.\n\n```\nx ← 3\ny ← 5\nREPEAT 3 TIMES\n{\n  x ← x + y\n  y ← y - 1\n}\nDISPLAY(x)\n```\n\nWhat value is displayed when the code segment runs?",
+      "correct": [
+        "15"
+      ],
+      "explanation": "Trace each iteration. Start: $x = 3, y = 5$. After iteration 1: $x = 8, y = 4$. After iteration 2: $x = 12, y = 3$. After iteration 3: $x = 15, y = 2$. The code displays 15.",
+      "hint": "Make a table with columns for x and y and update both values every time through the loop.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "tracing",
+        "loops"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-csp-u3-002",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 3: Algorithms and Programming",
+      "topic": "Searching",
+      "skill": "Binary search efficiency",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "A sorted list contains 1,000 items. What is the maximum number of items a binary search would need to examine to determine whether a particular value is in the list?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "1,000"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        },
+        {
+          "id": "C",
+          "text": "500"
+        },
+        {
+          "id": "D",
+          "text": "100"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "Binary search halves the remaining search range with each comparison. Because $2^{10} = 1024 \\ge 1000$, at most 10 comparisons are needed. Examining all 1,000 items would be a linear search, and 500 is the average for a linear search.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "binary search",
+        "efficiency"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-csp-u5-001",
+      "exam": "ap",
+      "course": "ap-computer-science-principles",
+      "section": "Big Idea 5: Impact of Computing",
+      "topic": "Safe computing",
+      "skill": "Protecting against phishing",
+      "difficulty": "easy",
+      "type": "multi",
+      "prompt": "Which of the following actions help protect a user against phishing attacks? Select two answers.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Reusing the same password on every site so it is easy to remember"
+        },
+        {
+          "id": "B",
+          "text": "Checking the sender's address and previewing a link's destination before clicking"
+        },
+        {
+          "id": "C",
+          "text": "Turning off automatic software updates"
+        },
+        {
+          "id": "D",
+          "text": "Enabling multifactor authentication on important accounts"
+        }
+      ],
+      "correct": [
+        "B",
+        "D"
+      ],
+      "explanation": "Inspecting senders and link destinations helps users spot fake messages, and multifactor authentication limits the damage if a password is stolen, because an attacker would also need the second factor. Reusing passwords and disabling updates increase risk.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "cybersecurity",
+        "select two"
+      ],
+      "version": 1
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "ap-chem-u1-001",
+      "exam": "ap",
+      "course": "ap-chemistry",
+      "section": "Unit 1: Atomic Structure and Properties",
+      "topic": "Moles and molar mass",
+      "skill": "Mole calculations",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "How many moles of water are in 36.0 grams of $H_2O$? (Molar mass of $H_2O$ = 18.0 g/mol)",
+      "correct": [
+        "2",
+        "2.0",
+        "2.00"
+      ],
+      "tolerance": 0.01,
+      "explanation": "Divide mass by molar mass: $\\frac{36.0 \\text{ g}}{18.0 \\text{ g/mol}} = 2.00 \\text{ mol}$.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "moles"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-chem-u1-002",
+      "exam": "ap",
+      "course": "ap-chemistry",
+      "section": "Unit 1: Atomic Structure and Properties",
+      "topic": "Periodic trends",
+      "skill": "Ionization energy",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following elements has the highest first ionization energy?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Lithium"
+        },
+        {
+          "id": "B",
+          "text": "Carbon"
+        },
+        {
+          "id": "C",
+          "text": "Oxygen"
+        },
+        {
+          "id": "D",
+          "text": "Neon"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "First ionization energy generally increases across a period because effective nuclear charge increases while electrons stay in the same shell. Neon, a noble gas at the end of period 2, has a filled valence shell and the highest first ionization energy of these elements.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "periodic trends"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-chem-u2-001",
+      "exam": "ap",
+      "course": "ap-chemistry",
+      "section": "Unit 2: Molecular and Ionic Compound Structure and Properties",
+      "topic": "VSEPR",
+      "skill": "Molecular geometry",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "What is the molecular geometry of ammonia, $NH_3$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Trigonal planar"
+        },
+        {
+          "id": "B",
+          "text": "Trigonal pyramidal"
+        },
+        {
+          "id": "C",
+          "text": "Tetrahedral"
+        },
+        {
+          "id": "D",
+          "text": "Bent"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "Nitrogen in $NH_3$ has four electron domains: three bonding pairs and one lone pair. The electron-domain geometry is tetrahedral, but the lone pair is not counted in the molecular shape, which is trigonal pyramidal with bond angles of about 107 degrees.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "VSEPR"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-chem-u8-001",
+      "exam": "ap",
+      "course": "ap-chemistry",
+      "section": "Unit 8: Acids and Bases",
+      "topic": "pH",
+      "skill": "Calculating pH of strong acids",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "What is the pH of a 0.0010 M solution of hydrochloric acid, a strong acid?",
+      "correct": [
+        "3"
+      ],
+      "tolerance": 0.01,
+      "explanation": "HCl dissociates completely, so $[H^+] = 1.0 \\times 10^{-3}$ M. Then $\\text{pH} = -\\log(1.0 \\times 10^{-3}) = 3$.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "pH",
+        "strong acids"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-chem-u7-001",
+      "exam": "ap",
+      "course": "ap-chemistry",
+      "section": "Unit 7: Equilibrium",
+      "topic": "Le Chatelier's principle",
+      "skill": "Predicting equilibrium shifts",
+      "difficulty": "hard",
+      "type": "mcq",
+      "prompt": "For the exothermic reaction $N_2(g) + 3H_2(g) \\rightleftharpoons 2NH_3(g)$, which change would increase the amount of $NH_3$ present at equilibrium?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Adding a catalyst"
+        },
+        {
+          "id": "B",
+          "text": "Decreasing the total pressure"
+        },
+        {
+          "id": "C",
+          "text": "Decreasing the temperature"
+        },
+        {
+          "id": "D",
+          "text": "Removing some $N_2$"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "Because the forward reaction releases heat, lowering the temperature shifts the equilibrium toward products, increasing $NH_3$. A catalyst speeds up reaching equilibrium without shifting it, lowering pressure favors the side with more gas moles (the reactants, 4 moles vs. 2), and removing $N_2$ shifts the equilibrium toward reactants.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "equilibrium",
+        "Le Chatelier"
+      ],
+      "version": 1
+    }
+  ]
+}

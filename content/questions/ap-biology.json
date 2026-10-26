@@ -1,0 +1,165 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "ap-bio-u2-001",
+      "exam": "ap",
+      "course": "ap-biology",
+      "section": "Unit 2: Cell Structure and Function",
+      "topic": "Organelles",
+      "skill": "Organelle function",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "In eukaryotic cells, the electron transport chain that produces most of the ATP from cellular respiration is located in the",
+      "choices": [
+        {
+          "id": "A",
+          "text": "inner mitochondrial membrane"
+        },
+        {
+          "id": "B",
+          "text": "nucleus"
+        },
+        {
+          "id": "C",
+          "text": "rough endoplasmic reticulum"
+        },
+        {
+          "id": "D",
+          "text": "Golgi apparatus"
+        }
+      ],
+      "correct": [
+        "A"
+      ],
+      "explanation": "The electron transport chain and ATP synthase are embedded in the inner mitochondrial membrane, where a proton gradient drives most ATP production during aerobic respiration. The nucleus stores DNA, the rough ER synthesizes proteins, and the Golgi modifies and packages them.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "mitochondria",
+        "cellular respiration"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-bio-u3-001",
+      "exam": "ap",
+      "course": "ap-biology",
+      "section": "Unit 3: Cellular Energetics",
+      "topic": "Enzymes",
+      "skill": "Enzyme inhibition",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The effect of a competitive inhibitor on an enzyme-catalyzed reaction can be reduced by",
+      "choices": [
+        {
+          "id": "A",
+          "text": "lowering the temperature to near freezing"
+        },
+        {
+          "id": "B",
+          "text": "increasing the substrate concentration"
+        },
+        {
+          "id": "C",
+          "text": "denaturing the enzyme"
+        },
+        {
+          "id": "D",
+          "text": "removing the enzyme's cofactor"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "A competitive inhibitor binds the enzyme's active site and competes with the substrate. Adding more substrate makes it more likely that substrate, rather than inhibitor, occupies the active site, so the reaction rate can approach its maximum. Lowering temperature, denaturing the enzyme, or removing a cofactor would further reduce activity.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "enzymes",
+        "inhibition"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-bio-u3-002",
+      "exam": "ap",
+      "course": "ap-biology",
+      "section": "Unit 3: Cellular Energetics",
+      "topic": "Photosynthesis",
+      "skill": "Light-dependent reactions",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The oxygen gas released by plants during photosynthesis comes from which molecule?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Carbon dioxide"
+        },
+        {
+          "id": "B",
+          "text": "Glucose"
+        },
+        {
+          "id": "C",
+          "text": "Water"
+        },
+        {
+          "id": "D",
+          "text": "ATP"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "In the light-dependent reactions, photosystem II splits water molecules to replace electrons, releasing $O_2$ as a byproduct. Isotope-labeling experiments confirmed that the oxygen comes from water, not carbon dioxide, which supplies carbon for sugars in the Calvin cycle.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "photosynthesis"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-bio-u5-001",
+      "exam": "ap",
+      "course": "ap-biology",
+      "section": "Unit 5: Heredity",
+      "topic": "Mendelian genetics",
+      "skill": "Monohybrid crosses",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "Two organisms that are both heterozygous for a single gene ($Aa \\times Aa$) are crossed. What fraction of the offspring are expected to be heterozygous? Enter a fraction or decimal.",
+      "correct": [
+        "1/2",
+        "0.5"
+      ],
+      "explanation": "A Punnett square for $Aa \\times Aa$ gives $AA$, $Aa$, $aA$, and $aa$ in equal proportions. Two of the four outcomes are heterozygous, so the expected fraction is $\\frac{2}{4} = \\frac{1}{2}$, or 0.5.",
+      "hint": "Draw a 2 by 2 Punnett square.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "Punnett square"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-bio-u7-001",
+      "exam": "ap",
+      "course": "ap-biology",
+      "section": "Unit 7: Natural Selection",
+      "topic": "Population genetics",
+      "skill": "Hardy-Weinberg equilibrium",
+      "difficulty": "hard",
+      "type": "numeric",
+      "prompt": "In a population in Hardy-Weinberg equilibrium, 16% of individuals show a recessive phenotype. What is the expected frequency of heterozygous individuals? Enter a decimal.",
+      "correct": [
+        "0.48"
+      ],
+      "tolerance": 0.001,
+      "explanation": "The recessive phenotype frequency is $q^2 = 0.16$, so $q = 0.4$ and $p = 1 - 0.4 = 0.6$. Heterozygotes occur at frequency $2pq = 2(0.6)(0.4) = 0.48$.",
+      "hint": "Start from $q^2$, then use $p + q = 1$.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "Hardy-Weinberg"
+      ],
+      "version": 1
+    }
+  ]
+}

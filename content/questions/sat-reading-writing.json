@@ -1,0 +1,395 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "sat-rw-wic-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Craft and Structure",
+      "skill": "Words in context",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "Marine biologist Ayana Brooks noted that the coral colony's recovery after the heat wave was far from ______: although some branches regrew within months, others remained bleached for years, and a few never recovered at all."
+      },
+      "prompt": "Which choice completes the text with the most logical and precise word?",
+      "choices": [
+        { "id": "A", "text": "uniform" },
+        { "id": "B", "text": "sudden" },
+        { "id": "C", "text": "invisible" },
+        { "id": "D", "text": "permanent" }
+      ],
+      "correct": ["A"],
+      "explanation": "The colon introduces evidence that different branches recovered at very different rates, from months, to years, to never. That contrast shows the recovery was not \"uniform,\" meaning consistent throughout. Nothing in the text discusses speed overall (sudden), visibility (invisible), or whether the recovery would last (permanent).",
+      "hint": "Read what comes after the colon: it explains what the recovery was \"far from.\"",
+      "estimatedSeconds": 70,
+      "tags": ["vocabulary", "context clues"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-wic-002",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Craft and Structure",
+      "skill": "Words in context",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "text": "The novelist's early reviewers were ______ in their praise; even critics who usually found fault with debut works described her prose as assured and inventive."
+      },
+      "prompt": "Which choice completes the text with the most logical and precise word?",
+      "choices": [
+        { "id": "A", "text": "tepid" },
+        { "id": "B", "text": "ambivalent" },
+        { "id": "C", "text": "unstinting" },
+        { "id": "D", "text": "premature" }
+      ],
+      "correct": ["C"],
+      "explanation": "The second clause shows that even normally harsh critics praised the novelist, so the praise was generous and wholehearted. \"Unstinting\" means given freely and without holding back. \"Tepid\" (lukewarm) and \"ambivalent\" (mixed) contradict the strong praise, and nothing suggests the praise came too early (premature).",
+      "estimatedSeconds": 75,
+      "tags": ["vocabulary", "tone"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-wic-003",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Craft and Structure",
+      "skill": "Words in context",
+      "difficulty": "easy",
+      "type": "mcq",
+      "passage": {
+        "text": "Despite the storm's intensity, the old lighthouse remained ______; the next morning, keepers found its stone walls without a single new crack."
+      },
+      "prompt": "Which choice completes the text with the most logical and precise word?",
+      "choices": [
+        { "id": "A", "text": "fragile" },
+        { "id": "B", "text": "intact" },
+        { "id": "C", "text": "abandoned" },
+        { "id": "D", "text": "illuminated" }
+      ],
+      "correct": ["B"],
+      "explanation": "The text says the walls had no new cracks after the storm, so the lighthouse stayed whole and undamaged, which is what \"intact\" means. \"Fragile\" contradicts the evidence, and the text gives no information about whether the lighthouse was abandoned or lit.",
+      "estimatedSeconds": 55,
+      "tags": ["vocabulary"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-tsp-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Craft and Structure",
+      "skill": "Text structure and purpose",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "In many cities, neighborhoods with few trees can be several degrees hotter on summer afternoons than nearby areas with dense tree cover. To address this, the fictional city of Fairhaven planted 12,000 street trees between 2015 and 2022, prioritizing the blocks with the highest recorded surface temperatures. Early measurements suggest that those blocks have cooled more than blocks that received fewer trees, though officials caution that the young trees will not reach full size for another decade."
+      },
+      "prompt": "Which choice best describes the overall structure of the text?",
+      "choices": [
+        { "id": "A", "text": "It presents two competing theories about urban heat and argues that one is correct." },
+        { "id": "B", "text": "It describes a historical event and traces its long-term consequences." },
+        { "id": "C", "text": "It summarizes a scientific debate and calls for more research." },
+        { "id": "D", "text": "It identifies a problem, describes a response to it, and reports preliminary results of that response." }
+      ],
+      "correct": ["D"],
+      "explanation": "The text first describes a problem (treeless neighborhoods are hotter), then a response (Fairhaven planted 12,000 trees on the hottest blocks), and finally early, qualified results (those blocks have cooled more). No competing theories or debate are presented, and the focus is on a recent program rather than a historical event.",
+      "estimatedSeconds": 75,
+      "tags": ["structure", "purpose"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-ctc-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Craft and Structure",
+      "skill": "Cross-text connections",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "title": "Text 1 and Text 2",
+        "text": "Text 1\nFor much of the twentieth century, many paleontologists assumed that giant sauropod dinosaurs spent much of their lives in lakes and swamps, where water was thought to help support their enormous bodies.\n\nText 2\nAnalyses of sauropod limb bones show columnlike legs and compact feet suited to bearing weight on land. Fossilized trackways add further evidence, recording herds of sauropods walking across firm ground. Most researchers now conclude that sauropods were primarily land dwellers."
+      },
+      "prompt": "Based on the texts, how would the author of Text 2 most likely respond to the assumption described in Text 1?",
+      "choices": [
+        { "id": "A", "text": "By agreeing with it but noting that fossilized trackways are rare" },
+        { "id": "B", "text": "By arguing that physical evidence from bones and trackways undermines it" },
+        { "id": "C", "text": "By claiming that sauropods were smaller than earlier researchers believed" },
+        { "id": "D", "text": "By suggesting that it applied only to young sauropods" }
+      ],
+      "correct": ["B"],
+      "explanation": "Text 2 presents limb-bone structure and trackways on firm ground as evidence that sauropods lived mainly on land, which directly challenges Text 1's assumption that they lived in water. Text 2 does not agree with the assumption, discuss sauropod size, or distinguish young from adult animals.",
+      "estimatedSeconds": 90,
+      "tags": ["paired texts", "evidence"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-cid-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Information and Ideas",
+      "skill": "Central ideas and details",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "Clark's nutcrackers, birds of western North American mountains, bury thousands of pine seeds in scattered caches each fall and retrieve many of them months later, sometimes from beneath snow. In laboratory and field studies, researchers found that when nearby objects such as stones were moved, the birds searched in the spot that matched the objects' new positions rather than the true location of the seeds. The findings indicate that the birds remember where caches are relative to landmarks."
+      },
+      "prompt": "Which choice best states the main idea of the text?",
+      "choices": [
+        { "id": "A", "text": "Clark's nutcrackers bury seeds beneath snow to hide them from other animals." },
+        { "id": "B", "text": "Clark's nutcrackers rely mainly on their sense of smell to find stored seeds." },
+        { "id": "C", "text": "Research suggests that Clark's nutcrackers find their seed caches by remembering the caches' positions relative to landmarks." },
+        { "id": "D", "text": "Clark's nutcrackers store fewer seeds than most other seed-caching birds." }
+      ],
+      "correct": ["C"],
+      "explanation": "The text describes the birds' caching behavior and then an experiment showing that moving landmarks shifted where the birds searched, leading to the conclusion that they use spatial memory tied to landmarks. The experiment actually suggests smell is not the main cue, and the text says nothing about hiding seeds from other animals or comparing the number of seeds with other birds.",
+      "estimatedSeconds": 80,
+      "tags": ["main idea", "science passage"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-coe-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Information and Ideas",
+      "skill": "Command of evidence: quantitative",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "text": "A student studying a community garden compared plots watered by drip irrigation with plots watered by hand. The student claims that the advantage of drip irrigation over hand watering was greatest during the hottest season of the year, summer."
+      },
+      "figure": {
+        "kind": "table",
+        "caption": "Average weekly vegetable yield per plot (kilograms)",
+        "columns": ["Season", "Drip irrigation", "Hand watering"],
+        "rows": [
+          ["Spring", "4.2", "3.9"],
+          ["Summer", "6.8", "5.1"],
+          ["Fall", "3.5", "3.4"]
+        ]
+      },
+      "prompt": "Which choice most effectively uses data from the table to support the student's claim?",
+      "choices": [
+        { "id": "A", "text": "Drip-irrigated plots produced more in summer (6.8 kilograms) than in spring (4.2 kilograms)." },
+        { "id": "B", "text": "In fall, both drip-irrigated and hand-watered plots averaged less than 4 kilograms per week." },
+        { "id": "C", "text": "In spring, hand-watered plots averaged 3.9 kilograms per week." },
+        { "id": "D", "text": "In summer, drip-irrigated plots averaged 1.7 kilograms more per week than hand-watered plots, a larger gap than in spring (0.3) or fall (0.1)." }
+      ],
+      "correct": ["D"],
+      "explanation": "The claim compares the two watering methods across seasons, so the support must show that the difference between methods was largest in summer. Choice D computes each season's gap (1.7, 0.3, and 0.1 kilograms) and shows summer's is greatest. Choice A compares seasons for only one method, and choices B and C do not compare the methods' advantage at all.",
+      "hint": "The claim is about the gap between the two methods, not about either method alone.",
+      "estimatedSeconds": 95,
+      "tags": ["data", "table", "claims"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-coe-002",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Information and Ideas",
+      "skill": "Command of evidence: textual",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "In the original short story \"The Lamplighter's Daughter,\" the narrator portrays Mara as a person who finds comfort in routine."
+      },
+      "prompt": "Which quotation from the story most effectively illustrates the claim?",
+      "choices": [
+        { "id": "A", "text": "\"Mara had never seen the ocean, though she often dreamed of it.\"" },
+        { "id": "B", "text": "\"Every evening at six, Mara set out the same chipped blue cup, and only then did her shoulders loosen.\"" },
+        { "id": "C", "text": "\"The town council argued for hours about the rising price of lamp oil.\"" },
+        { "id": "D", "text": "\"Her brother left for the city one spring morning without saying goodbye.\"" }
+      ],
+      "correct": ["B"],
+      "explanation": "Choice B shows Mara repeating the same action at the same time every evening, and it links that ritual to her relaxing (\"her shoulders loosen\"), which illustrates comfort in routine. The other quotations describe a dream, a town debate, and her brother's departure, none of which connect routine to comfort.",
+      "estimatedSeconds": 70,
+      "tags": ["literary evidence", "characterization"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-inf-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Information and Ideas",
+      "skill": "Inferences",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "text": "Archaeologists excavating a hilltop settlement found pottery fragments made from a type of clay that does not occur naturally within 200 kilometers of the site. The fragments' painted designs, however, closely match those on other ceramics known to have been produced at the settlement. These findings suggest that ______"
+      },
+      "prompt": "Which choice most logically completes the text?",
+      "choices": [
+        { "id": "A", "text": "the settlement's potters were unfamiliar with local decorative styles." },
+        { "id": "B", "text": "the clay near the settlement was too soft to hold painted designs." },
+        { "id": "C", "text": "the settlement was abandoned before pottery became common in the region." },
+        { "id": "D", "text": "the settlement's potters obtained clay from a distant source, possibly through trade." }
+      ],
+      "correct": ["D"],
+      "explanation": "The clay came from at least 200 kilometers away, yet the decoration matches the settlement's own style, so the most reasonable inference is that local potters used imported clay. Choice A contradicts the matching designs, choice B adds a claim about clay quality the text never makes, and choice C conflicts with the evidence that pottery was produced at the site.",
+      "estimatedSeconds": 85,
+      "tags": ["inference", "archaeology"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-bnd-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Standard English Conventions",
+      "skill": "Boundaries",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "Botanist Ynés Mexía did not begin collecting plants professionally until her fifties ______ over the following thirteen years, she gathered roughly 145,000 specimens on expeditions across the Americas."
+      },
+      "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+      "choices": [
+        { "id": "A", "text": "fifties" },
+        { "id": "B", "text": "fifties," },
+        { "id": "C", "text": "fifties;" },
+        { "id": "D", "text": "fifties, which" }
+      ],
+      "correct": ["C"],
+      "explanation": "Both parts of the sentence are independent clauses (\"Botanist Ynés Mexía did not begin...\" and \"over the following thirteen years, she gathered...\"). A semicolon can join two independent clauses. No punctuation (choice A) creates a run-on, a comma alone (choice B) creates a comma splice, and \"which\" (choice D) produces an ungrammatical clause.",
+      "estimatedSeconds": 60,
+      "tags": ["semicolons", "independent clauses"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-fss-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Standard English Conventions",
+      "skill": "Form, structure, and sense",
+      "difficulty": "easy",
+      "type": "mcq",
+      "passage": {
+        "text": "The collection of letters written by the poet during her travels ______ now housed in a university library, where researchers can request access."
+      },
+      "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+      "choices": [
+        { "id": "A", "text": "are" },
+        { "id": "B", "text": "is" },
+        { "id": "C", "text": "were" },
+        { "id": "D", "text": "have been" }
+      ],
+      "correct": ["B"],
+      "explanation": "The subject of the sentence is the singular noun \"collection,\" not \"letters,\" which is part of the prepositional phrase \"of letters.\" A singular subject takes the singular verb \"is.\" The other choices are plural verbs.",
+      "hint": "Cross out the prepositional phrase to find the true subject.",
+      "estimatedSeconds": 45,
+      "tags": ["subject-verb agreement"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-fss-002",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Standard English Conventions",
+      "skill": "Form, structure, and sense",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "The city council approved the new bus rapid transit plan after ______ members spent three months reviewing public comments about proposed routes."
+      },
+      "prompt": "Which choice completes the text so that it conforms to the conventions of Standard English?",
+      "choices": [
+        { "id": "A", "text": "it's" },
+        { "id": "B", "text": "their" },
+        { "id": "C", "text": "its" },
+        { "id": "D", "text": "they're" }
+      ],
+      "correct": ["C"],
+      "explanation": "The pronoun refers back to \"the city council,\" a singular collective noun, and it needs to show possession (the council's members). The singular possessive pronoun is \"its.\" \"It's\" means \"it is,\" \"they're\" means \"they are,\" and \"their\" is plural, which does not agree with the singular antecedent.",
+      "estimatedSeconds": 50,
+      "tags": ["pronouns", "possessives"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-trn-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Expression of Ideas",
+      "skill": "Transitions",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "text": "Glass frogs have translucent skin on their undersides, allowing observers to see some of their internal organs. ______ researchers have found that the frogs become even more transparent while they sleep, apparently by storing most of their red blood cells in their livers."
+      },
+      "prompt": "Which choice completes the text with the most logical transition?",
+      "choices": [
+        { "id": "A", "text": "In contrast," },
+        { "id": "B", "text": "Therefore," },
+        { "id": "C", "text": "Nevertheless," },
+        { "id": "D", "text": "Moreover," }
+      ],
+      "correct": ["D"],
+      "explanation": "The second sentence adds a further, related fact about the frogs' transparency, so an additive transition such as \"Moreover\" fits. The sentences do not contrast (In contrast, Nevertheless), and the first fact does not cause the second (Therefore).",
+      "estimatedSeconds": 55,
+      "tags": ["transitions", "addition"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-trn-002",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Expression of Ideas",
+      "skill": "Transitions",
+      "difficulty": "easy",
+      "type": "mcq",
+      "passage": {
+        "text": "Early telescopes produced images with colored fringes because their glass lenses bent different colors of light by slightly different amounts. Isaac Newton's solution was to replace the main lens with a curved mirror, which reflects all colors at the same angle. ______ his reflecting telescope avoided the color distortion that troubled lens-based designs."
+      },
+      "prompt": "Which choice completes the text with the most logical transition?",
+      "choices": [
+        { "id": "A", "text": "As a result," },
+        { "id": "B", "text": "For instance," },
+        { "id": "C", "text": "Still," },
+        { "id": "D", "text": "Similarly," }
+      ],
+      "correct": ["A"],
+      "explanation": "Because a mirror reflects all colors at the same angle, the reflecting telescope avoided color fringes. The final sentence is a consequence of the previous one, so \"As a result\" is the logical transition. The sentence is not an example, a contrast, or a parallel case.",
+      "estimatedSeconds": 50,
+      "tags": ["transitions", "cause and effect"],
+      "version": 1
+    },
+    {
+      "id": "sat-rw-syn-001",
+      "exam": "sat",
+      "course": "sat-rw",
+      "section": "Reading and Writing",
+      "topic": "Expression of Ideas",
+      "skill": "Rhetorical synthesis",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "While researching a topic, a student has taken the following notes:",
+        "text": "- The Svalbard Global Seed Vault is on a Norwegian island in the Arctic.\n- It stores duplicate samples of seeds held by gene banks around the world.\n- Its purpose is to safeguard crop diversity in case samples elsewhere are lost to disasters, war, or equipment failure.\n- It opened in 2008."
+      },
+      "prompt": "The student wants to explain the vault's purpose to an audience unfamiliar with it. Which choice most effectively uses relevant information from the notes to accomplish this goal?",
+      "choices": [
+        { "id": "A", "text": "Opened in 2008, the Svalbard Global Seed Vault is located on a Norwegian island in the Arctic." },
+        { "id": "B", "text": "Gene banks around the world hold seed samples." },
+        { "id": "C", "text": "The Svalbard Global Seed Vault stores backup copies of seeds from gene banks worldwide so that crop diversity is protected if samples elsewhere are lost." },
+        { "id": "D", "text": "The vault, which is in the Arctic, opened on a Norwegian island in 2008." }
+      ],
+      "correct": ["C"],
+      "explanation": "The goal is to explain the vault's purpose. Choice C identifies the vault, says what it stores, and explains why: to protect crop diversity if other samples are lost. Choices A and D give only location and opening date, and choice B never mentions the vault.",
+      "estimatedSeconds": 70,
+      "tags": ["synthesis", "audience and purpose"],
+      "version": 1
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "apes-u1-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 1: The Living World: Ecosystems",
+      "topic": "Energy flow",
+      "skill": "Trophic levels and the 10% rule",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "On average, approximately what percentage of the energy at one trophic level is available to the next trophic level?",
+      "choices": [
+        { "id": "A", "text": "1%" },
+        { "id": "B", "text": "50%" },
+        { "id": "C", "text": "10%" },
+        { "id": "D", "text": "90%" }
+      ],
+      "correct": ["C"],
+      "explanation": "As a rule of thumb, about 10% of the energy at one trophic level is transferred to the next. Most of the rest is lost as heat through cellular respiration or is never consumed. Choice D is roughly the share that is lost, not transferred.",
+      "estimatedSeconds": 40,
+      "tags": ["energy pyramid"],
+      "version": 1
+    },
+    {
+      "id": "apes-u1-002",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 1: The Living World: Ecosystems",
+      "topic": "Biogeochemical cycles",
+      "skill": "The nitrogen cycle",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which process in the nitrogen cycle converts atmospheric nitrogen gas ($N_2$) into ammonia that organisms can use?",
+      "choices": [
+        { "id": "A", "text": "Nitrification" },
+        { "id": "B", "text": "Nitrogen fixation" },
+        { "id": "C", "text": "Denitrification" },
+        { "id": "D", "text": "Ammonification" }
+      ],
+      "correct": ["B"],
+      "explanation": "Nitrogen fixation, performed by certain bacteria (such as those in legume root nodules) and by lightning or industrial processes, converts $N_2$ into ammonia. Nitrification converts ammonia to nitrites and nitrates, denitrification returns nitrogen to the atmosphere as $N_2$, and ammonification releases ammonia from decomposing organic matter.",
+      "estimatedSeconds": 50,
+      "tags": ["nitrogen cycle", "bacteria"],
+      "version": 1
+    },
+    {
+      "id": "apes-u3-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 3: Populations",
+      "topic": "Human population dynamics",
+      "skill": "Doubling time and the rule of 70",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "A country's population is growing at a constant rate of 2% per year. Using the rule of 70, approximately how many years will it take for the population to double?",
+      "correct": ["35"],
+      "tolerance": 0.5,
+      "explanation": "The rule of 70 estimates doubling time as $\\frac{70}{\\text{percent growth rate}}$. Here, $\\frac{70}{2} = 35$ years.",
+      "estimatedSeconds": 40,
+      "tags": ["rule of 70", "growth rate"],
+      "version": 1
+    },
+    {
+      "id": "apes-u3-002",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 3: Populations",
+      "topic": "Reproductive strategies",
+      "skill": "r- and K-selected species",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following is characteristic of K-selected species?",
+      "choices": [
+        { "id": "A", "text": "Many offspring with little or no parental care" },
+        { "id": "B", "text": "Short lifespans and early reproductive maturity" },
+        { "id": "C", "text": "Populations that frequently boom and crash" },
+        { "id": "D", "text": "Few offspring with significant parental care, and populations near carrying capacity" }
+      ],
+      "correct": ["D"],
+      "explanation": "K-selected species, such as elephants and whales, invest heavily in a small number of offspring and tend to maintain populations near the environment's carrying capacity. Choices A, B, and C describe r-selected species, which produce many offspring and experience boom-and-bust population cycles.",
+      "estimatedSeconds": 45,
+      "tags": ["r-selected", "K-selected", "carrying capacity"],
+      "version": 1
+    },
+    {
+      "id": "apes-u4-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 4: Earth Systems and Resources",
+      "topic": "The atmosphere",
+      "skill": "Atmospheric layers",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "The ozone layer, which absorbs most of the Sun's harmful ultraviolet-B radiation, is located primarily in which layer of the atmosphere?",
+      "choices": [
+        { "id": "A", "text": "Stratosphere" },
+        { "id": "B", "text": "Troposphere" },
+        { "id": "C", "text": "Mesosphere" },
+        { "id": "D", "text": "Thermosphere" }
+      ],
+      "correct": ["A"],
+      "explanation": "Most atmospheric ozone is concentrated in the stratosphere, roughly 15 to 35 kilometers above Earth's surface, where it absorbs UV-B radiation. Ozone in the troposphere, near the ground, is a harmful pollutant rather than a protective layer.",
+      "estimatedSeconds": 40,
+      "tags": ["ozone", "stratosphere"],
+      "version": 1
+    },
+    {
+      "id": "apes-u5-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 5: Land and Water Use",
+      "topic": "Agriculture",
+      "skill": "Soil conservation",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "Which agricultural practice most directly reduces soil erosion on sloped farmland?",
+      "choices": [
+        { "id": "A", "text": "Monocropping" },
+        { "id": "B", "text": "Removing windbreaks to enlarge fields" },
+        { "id": "C", "text": "Contour plowing" },
+        { "id": "D", "text": "Leaving fields bare between harvests" }
+      ],
+      "correct": ["C"],
+      "explanation": "Contour plowing creates furrows that follow the land's elevation lines, slowing water runoff and trapping soil on slopes. Removing windbreaks and leaving fields bare increase erosion, and monocropping can degrade soil over time.",
+      "estimatedSeconds": 40,
+      "tags": ["erosion", "sustainable agriculture"],
+      "version": 1
+    },
+    {
+      "id": "apes-u6-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 6: Energy Resources and Consumption",
+      "topic": "Comparing energy sources",
+      "skill": "Interpreting energy data",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The bar chart shows approximate median lifecycle greenhouse gas emissions for several electricity sources, in grams of $CO_2$-equivalent per kilowatt-hour (kWh). Based on the chart, replacing 1,000 kWh of coal-generated electricity with wind-generated electricity would reduce lifecycle emissions by approximately how much?",
+      "figure": {
+        "kind": "chart",
+        "chartType": "bar",
+        "title": "Lifecycle emissions by source (illustrative median estimates)",
+        "xLabel": "Electricity source",
+        "yLabel": "g CO2-eq per kWh",
+        "data": [
+          { "x": "Coal", "y": 820 },
+          { "x": "Natural gas", "y": 490 },
+          { "x": "Solar PV", "y": 48 },
+          { "x": "Nuclear", "y": 12 },
+          { "x": "Wind", "y": 11 }
+        ]
+      },
+      "choices": [
+        { "id": "A", "text": "81 kilograms" },
+        { "id": "B", "text": "490 kilograms" },
+        { "id": "C", "text": "8,090 kilograms" },
+        { "id": "D", "text": "809 kilograms" }
+      ],
+      "correct": ["D"],
+      "explanation": "Each kWh switched from coal to wind saves about $820 - 11 = 809$ grams of $CO_2$-equivalent. For 1,000 kWh that is $809{,}000$ grams, or 809 kilograms. Choices A and C are off by a factor of 10, and choice B uses the natural gas value.",
+      "estimatedSeconds": 80,
+      "tags": ["data analysis", "unit conversion", "emissions"],
+      "version": 1
+    },
+    {
+      "id": "apes-u7-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 7: Atmospheric Pollution",
+      "topic": "Photochemical smog",
+      "skill": "Formation of tropospheric ozone",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Tropospheric (ground-level) ozone forms when which pair of primary pollutants reacts in the presence of sunlight?",
+      "choices": [
+        { "id": "A", "text": "Carbon dioxide and water vapor" },
+        { "id": "B", "text": "Nitrogen oxides and volatile organic compounds" },
+        { "id": "C", "text": "Sulfur dioxide and ammonia" },
+        { "id": "D", "text": "Methane and argon" }
+      ],
+      "correct": ["B"],
+      "explanation": "Ground-level ozone is a secondary pollutant. It forms when nitrogen oxides (mainly from vehicle exhaust and power plants) and volatile organic compounds react in sunlight, which is why ozone levels typically peak on sunny afternoons.",
+      "estimatedSeconds": 45,
+      "tags": ["smog", "secondary pollutants"],
+      "version": 1
+    },
+    {
+      "id": "apes-u8-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 8: Aquatic and Terrestrial Pollution",
+      "topic": "Nutrient pollution",
+      "skill": "Eutrophication",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Fertilizer runoff into a lake triggers a large algal bloom, and several weeks later many fish in the lake die. Which of the following best explains the fish kill?",
+      "choices": [
+        { "id": "A", "text": "The algae release chlorine gas that poisons fish." },
+        { "id": "B", "text": "The algae raise the water temperature above the fish's tolerance." },
+        { "id": "C", "text": "Bacteria decomposing the dead algae consume large amounts of dissolved oxygen." },
+        { "id": "D", "text": "The algae increase the water's dissolved oxygen to toxic levels." }
+      ],
+      "correct": ["C"],
+      "explanation": "Excess nitrogen and phosphorus fuel an algal bloom. When the algae die, aerobic bacteria decompose them and use up dissolved oxygen, creating hypoxic conditions in which fish cannot survive. This sequence is called eutrophication.",
+      "estimatedSeconds": 50,
+      "tags": ["eutrophication", "dissolved oxygen", "hypoxia"],
+      "version": 1
+    },
+    {
+      "id": "apes-u9-001",
+      "exam": "ap",
+      "course": "ap-environmental-science",
+      "section": "Unit 9: Global Change",
+      "topic": "Ocean acidification",
+      "skill": "Effects of ocean acidification",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following is a direct consequence of ocean acidification caused by rising atmospheric carbon dioxide?",
+      "choices": [
+        { "id": "A", "text": "Fewer available carbonate ions, making it harder for corals and shellfish to build calcium carbonate structures" },
+        { "id": "B", "text": "Higher dissolved oxygen in surface waters" },
+        { "id": "C", "text": "Thicker shells in mollusks and other calcifying organisms" },
+        { "id": "D", "text": "A decrease in global sea level" }
+      ],
+      "correct": ["A"],
+      "explanation": "When the ocean absorbs $CO_2$, it forms carbonic acid, which lowers pH and reduces the concentration of carbonate ions. Corals, oysters, and other calcifying organisms need carbonate ions to build calcium carbonate shells and skeletons, so acidification makes calcification harder.",
+      "estimatedSeconds": 50,
+      "tags": ["ocean acidification", "carbon dioxide"],
+      "version": 1
+    }
+  ]
+}

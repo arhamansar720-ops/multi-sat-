@@ -1,0 +1,245 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "apush-p2-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 2: 1607-1754",
+      "topic": "Colonial labor systems",
+      "skill": "Causation",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Secondary source summary",
+        "text": "In the Chesapeake colonies of the 1600s, tobacco cultivation demanded large amounts of labor. Planters initially relied heavily on indentured servants from England. By the early 1700s, however, enslaved Africans made up a growing share of the region's unfree labor force.",
+        "source": "Original summary written for practice"
+      },
+      "prompt": "Which of the following most directly contributed to the shift described in the passage?",
+      "choices": [
+        { "id": "A", "text": "The invention of the cotton gin" },
+        { "id": "B", "text": "The religious revivals of the First Great Awakening" },
+        { "id": "C", "text": "A decline in English migrants willing to become servants, along with planters' fears of armed former servants after Bacon's Rebellion" },
+        { "id": "D", "text": "The abolition of the transatlantic slave trade by Congress" }
+      ],
+      "correct": ["C"],
+      "explanation": "Improving economic conditions in England reduced the supply of indentured servants, and Bacon's Rebellion (1676) showed planters the dangers of a large population of landless former servants. Both pushed Chesapeake planters toward enslaved African labor. The cotton gin (1793) and the 1808 ban on importing enslaved people came much later, and the Great Awakening was a religious movement.",
+      "estimatedSeconds": 75,
+      "tags": ["Chesapeake", "indentured servitude", "slavery", "Bacon's Rebellion"],
+      "version": 1
+    },
+    {
+      "id": "apush-p3-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 3: 1754-1800",
+      "topic": "The Articles of Confederation",
+      "skill": "Causation",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "Which event most directly exposed the weakness of the national government under the Articles of Confederation and strengthened calls for a convention to revise it?",
+      "choices": [
+        { "id": "A", "text": "The Whiskey Rebellion" },
+        { "id": "B", "text": "Shays' Rebellion" },
+        { "id": "C", "text": "The Stamp Act Congress" },
+        { "id": "D", "text": "The Nullification Crisis" }
+      ],
+      "correct": ["B"],
+      "explanation": "Shays' Rebellion (1786-1787), an uprising of indebted Massachusetts farmers, showed that the Confederation Congress could not raise an army or restore order, which alarmed many leaders and helped lead to the Constitutional Convention of 1787. The Whiskey Rebellion (1794) occurred under the Constitution, the Stamp Act Congress (1765) predated independence, and the Nullification Crisis came in the 1830s.",
+      "estimatedSeconds": 45,
+      "tags": ["Articles of Confederation", "Constitution"],
+      "version": 1
+    },
+    {
+      "id": "apush-p4-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 4: 1800-1848",
+      "topic": "The Market Revolution",
+      "skill": "Continuity and change",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Secondary source summary",
+        "text": "Completed in 1825, the Erie Canal connected the Hudson River to Lake Erie. Shipping costs between Buffalo and New York City fell dramatically, and the time needed to move goods between the two cities dropped from weeks to days.",
+        "source": "Original summary written for practice"
+      },
+      "prompt": "Which of the following was a significant effect of the development described in the passage?",
+      "choices": [
+        { "id": "A", "text": "Stronger economic ties between the Northeast and the agricultural Midwest" },
+        { "id": "B", "text": "The end of steamboat traffic on major American rivers" },
+        { "id": "C", "text": "A decline in New York City's importance as a port" },
+        { "id": "D", "text": "Closer economic ties between the Midwest and the South than between the Midwest and the Northeast" }
+      ],
+      "correct": ["A"],
+      "explanation": "The Erie Canal made it cheap to ship Midwestern grain east and manufactured goods west, binding the Northeast and the Old Northwest into an interconnected market and helping make New York City the nation's leading port. Steamboats continued to operate, and the canal pulled Midwestern trade toward the Northeast rather than the South.",
+      "estimatedSeconds": 60,
+      "tags": ["Erie Canal", "transportation revolution"],
+      "version": 1
+    },
+    {
+      "id": "apush-p5-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 5: 1844-1877",
+      "topic": "Sectional conflict",
+      "skill": "Causation",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Secondary source summary",
+        "text": "As part of the Compromise of 1850, Congress passed a strengthened Fugitive Slave Act. It required officials and citizens in free states to assist in capturing people who had escaped slavery, denied accused individuals a jury trial, and paid commissioners more for ruling in favor of claimants.",
+        "source": "Original summary written for practice"
+      },
+      "prompt": "The law described in the passage most directly led to which of the following?",
+      "choices": [
+        { "id": "A", "text": "The immediate secession of southern states in 1850" },
+        { "id": "B", "text": "The collapse of the Republican Party" },
+        { "id": "C", "text": "Increased resistance in the North, including personal liberty laws and support for the Underground Railroad" },
+        { "id": "D", "text": "A national agreement to end the expansion of slavery" }
+      ],
+      "correct": ["C"],
+      "explanation": "The Fugitive Slave Act forced many Northerners to confront slavery directly, and several northern states passed personal liberty laws to obstruct it, while support for the Underground Railroad and abolitionism grew. Southern secession did not begin until 1860, the Republican Party was founded in 1854 and grew rather than collapsed, and no national agreement ended slavery's expansion.",
+      "estimatedSeconds": 70,
+      "tags": ["Compromise of 1850", "Fugitive Slave Act", "abolition"],
+      "version": 1
+    },
+    {
+      "id": "apush-p6-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 6: 1865-1898",
+      "topic": "Government and the economy in the Gilded Age",
+      "skill": "Contextualization",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following best describes the purpose of the Interstate Commerce Act of 1887?",
+      "choices": [
+        { "id": "A", "text": "To break up the Standard Oil Company" },
+        { "id": "B", "text": "To establish a federal income tax" },
+        { "id": "C", "text": "To restrict immigration from China" },
+        { "id": "D", "text": "To regulate railroads and require that their rates be reasonable and just" }
+      ],
+      "correct": ["D"],
+      "explanation": "Responding to farmers' complaints about discriminatory railroad rates, Congress passed the Interstate Commerce Act to regulate railroads and created the Interstate Commerce Commission, the first federal regulatory agency. Standard Oil was broken up in 1911 under the Sherman Antitrust Act, the federal income tax came with the Sixteenth Amendment (1913), and Chinese immigration was restricted by the Chinese Exclusion Act (1882).",
+      "estimatedSeconds": 55,
+      "tags": ["regulation", "railroads", "Populism"],
+      "version": 1
+    },
+    {
+      "id": "apush-p7-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 7: 1890-1945",
+      "topic": "The Progressive Era",
+      "skill": "Causation",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "Upton Sinclair's novel The Jungle (1906), which exposed unsanitary conditions in Chicago meatpacking plants, contributed most directly to which of the following?",
+      "choices": [
+        { "id": "A", "text": "The Sherman Antitrust Act" },
+        { "id": "B", "text": "The Meat Inspection Act and the Pure Food and Drug Act" },
+        { "id": "C", "text": "The Nineteenth Amendment" },
+        { "id": "D", "text": "The Federal Reserve Act" }
+      ],
+      "correct": ["B"],
+      "explanation": "Public outrage over The Jungle helped push Congress to pass the Meat Inspection Act and the Pure Food and Drug Act in 1906, examples of Progressive Era consumer protection. The Sherman Act (1890) predated the novel, and the Nineteenth Amendment (1920) and the Federal Reserve Act (1913) addressed suffrage and banking.",
+      "estimatedSeconds": 45,
+      "tags": ["muckrakers", "Progressivism", "consumer protection"],
+      "version": 1
+    },
+    {
+      "id": "apush-p7-002",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 7: 1890-1945",
+      "topic": "The New Deal",
+      "skill": "Comparison",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Secondary source summary",
+        "text": "The Social Security Act of 1935 created a federal system of old-age pensions funded by payroll taxes, along with unemployment insurance administered jointly with the states and aid for dependent children.",
+        "source": "Original summary written for practice"
+      },
+      "prompt": "The law described in the passage best reflects which broader change in the 1930s?",
+      "choices": [
+        { "id": "A", "text": "A return to the laissez-faire policies of the 1920s" },
+        { "id": "B", "text": "A sharp reduction in federal spending to balance the budget" },
+        { "id": "C", "text": "An expanded federal role in providing economic security to individuals" },
+        { "id": "D", "text": "The transfer of responsibility for welfare from the federal government to private charities" }
+      ],
+      "correct": ["C"],
+      "explanation": "The Social Security Act represented a major expansion of the federal government's responsibility for citizens' economic well-being, a hallmark of the New Deal. It moved away from 1920s laissez-faire approaches and from reliance on private charity, and New Deal programs increased rather than reduced federal spending.",
+      "estimatedSeconds": 55,
+      "tags": ["New Deal", "welfare state"],
+      "version": 1
+    },
+    {
+      "id": "apush-p8-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 8: 1945-1980",
+      "topic": "The early Cold War",
+      "skill": "Contextualization",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "The Marshall Plan (1948) was primarily intended to",
+      "choices": [
+        { "id": "A", "text": "rebuild Western European economies in order to reduce the appeal of communism" },
+        { "id": "B", "text": "create a military alliance among the United States and Western European nations" },
+        { "id": "C", "text": "provide military assistance to South Korea" },
+        { "id": "D", "text": "collect war reparations from Germany" }
+      ],
+      "correct": ["A"],
+      "explanation": "The Marshall Plan provided billions of dollars in economic aid to help Western Europe recover after World War II, reflecting the containment strategy's belief that economic stability would limit communism's appeal. NATO (1949) was the military alliance, and the Korean War began in 1950.",
+      "estimatedSeconds": 40,
+      "tags": ["containment", "Cold War"],
+      "version": 1
+    },
+    {
+      "id": "apush-p8-002",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 8: 1945-1980",
+      "topic": "The civil rights movement",
+      "skill": "Causation",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "In Brown v. Board of Education of Topeka (1954), the Supreme Court ruled that",
+      "choices": [
+        { "id": "A", "text": "the doctrine of \"separate but equal\" was constitutional in public facilities" },
+        { "id": "B", "text": "school districts must use busing to integrate schools" },
+        { "id": "C", "text": "suspects must be informed of their rights before police questioning" },
+        { "id": "D", "text": "state-mandated racial segregation of public schools is unconstitutional" }
+      ],
+      "correct": ["D"],
+      "explanation": "Brown v. Board of Education held that segregated public schools are inherently unequal and violate the Fourteenth Amendment's Equal Protection Clause, overturning Plessy v. Ferguson's \"separate but equal\" doctrine in public education. Court-ordered busing was addressed in Swann v. Charlotte-Mecklenburg (1971), and Miranda rights came from Miranda v. Arizona (1966).",
+      "estimatedSeconds": 40,
+      "tags": ["Supreme Court", "segregation"],
+      "version": 1
+    },
+    {
+      "id": "apush-p9-001",
+      "exam": "ap",
+      "course": "ap-us-history",
+      "section": "Period 9: 1980-Present",
+      "topic": "The conservative resurgence",
+      "skill": "Comparison",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following developments of the 1980s most clearly reflected the rise of political conservatism?",
+      "choices": [
+        { "id": "A", "text": "The expansion of Great Society programs" },
+        { "id": "B", "text": "The creation of the Environmental Protection Agency" },
+        { "id": "C", "text": "Federal income tax cuts and efforts to deregulate industries" },
+        { "id": "D", "text": "The passage of the Civil Rights Act" }
+      ],
+      "correct": ["C"],
+      "explanation": "The Reagan administration cut income tax rates, pursued deregulation, and sought to limit the growth of federal social programs, reflecting the conservative movement's emphasis on smaller government and free markets. The Great Society and Civil Rights Act date to the 1960s, and the EPA was created in 1970.",
+      "estimatedSeconds": 45,
+      "tags": ["Reagan", "conservatism"],
+      "version": 1
+    }
+  ]
+}

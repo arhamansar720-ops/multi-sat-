@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" width="320" height="220" role="img" aria-label="Right triangle ABC with right angle at C, AC = 9, BC = 12">
+  <rect width="320" height="220" fill="#ffffff"/>
+  <polygon points="60,180 60,40 260,180" fill="#eef2ff" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+  <polyline points="60,162 78,162 78,180" fill="none" stroke="#1e293b" stroke-width="2"/>
+  <g font-family="Inter, Arial, sans-serif" font-size="18" fill="#0f172a" font-weight="600">
+    <text x="42" y="36">A</text>
+    <text x="40" y="200">C</text>
+    <text x="266" y="200">B</text>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" font-size="16" fill="#334155">
+    <text x="36" y="116">9</text>
+    <text x="152" y="204">12</text>
+  </g>
+</svg>

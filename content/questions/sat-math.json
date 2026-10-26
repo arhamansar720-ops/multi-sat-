@@ -1,0 +1,706 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "sat-math-alg-001",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Algebra",
+      "skill": "Linear equations in one variable",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "If $3x + 7 = 25$, what is the value of $6x - 4$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "14"
+        },
+        {
+          "id": "B",
+          "text": "26"
+        },
+        {
+          "id": "C",
+          "text": "32"
+        },
+        {
+          "id": "D",
+          "text": "36"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "Subtract 7 from both sides to get $3x = 18$, so $x = 6$. Then $6x - 4 = 6(6) - 4 = 32$. Choice D is the value of $6x$ alone, and choice A comes from stopping after finding $3x - 4$.",
+      "hint": "Solve for $x$ first, or notice that $6x$ is just $2 \\cdot 3x$.",
+      "estimatedSeconds": 60,
+      "tags": [
+        "linear",
+        "solving"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-alg-002",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Algebra",
+      "skill": "Linear equations in two variables",
+      "difficulty": "medium",
+      "type": "numeric",
+      "prompt": "A line in the $xy$-plane passes through the points $(2, 5)$ and $(6, 17)$. What is the $y$-coordinate of the line's $y$-intercept?",
+      "correct": [
+        "-1"
+      ],
+      "explanation": "The slope is $\\frac{17 - 5}{6 - 2} = \\frac{12}{4} = 3$. Using $y = 3x + b$ with the point $(2, 5)$: $5 = 3(2) + b$, so $b = -1$. The line crosses the $y$-axis at $(0, -1)$.",
+      "hint": "Find the slope first, then substitute one of the points into $y = mx + b$.",
+      "estimatedSeconds": 90,
+      "tags": [
+        "slope",
+        "intercept"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-alg-003",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Algebra",
+      "skill": "Systems of two linear equations",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "$$2x + y = 11$$ $$x - y = 1$$ If $(x, y)$ is the solution to the system of equations above, what is the value of $xy$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "7"
+        },
+        {
+          "id": "B",
+          "text": "12"
+        },
+        {
+          "id": "C",
+          "text": "15"
+        },
+        {
+          "id": "D",
+          "text": "21"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "Adding the equations eliminates $y$: $3x = 12$, so $x = 4$. Substituting into $x - y = 1$ gives $y = 3$. Therefore $xy = 4 \\cdot 3 = 12$. Choice A is $x + y$, not $xy$.",
+      "hint": "Adding the two equations eliminates one variable.",
+      "estimatedSeconds": 90,
+      "tags": [
+        "systems",
+        "elimination"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-alg-004",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Algebra",
+      "skill": "Systems of two linear equations",
+      "difficulty": "hard",
+      "type": "mcq",
+      "prompt": "$$kx + 3y = 12$$ $$4x + 6y = 9$$ In the system of equations above, $k$ is a constant. For what value of $k$ does the system have no solution?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "2"
+        },
+        {
+          "id": "B",
+          "text": "4"
+        },
+        {
+          "id": "C",
+          "text": "6"
+        },
+        {
+          "id": "D",
+          "text": "8"
+        }
+      ],
+      "correct": [
+        "A"
+      ],
+      "explanation": "A linear system has no solution when the lines are parallel but distinct: same slope, different intercepts. The coefficients must be proportional, so $\\frac{k}{4} = \\frac{3}{6}$, giving $k = 2$. Check: with $k = 2$, doubling the first equation gives $4x + 6y = 24$, which has the same left side as $4x + 6y = 9$ but a different constant, so the lines never meet. Choice D comes from setting $\\frac{k}{4} = \\frac{6}{3}$, which flips the ratio.",
+      "hint": "No solution means the lines are parallel: what must be true about the ratios of the coefficients?",
+      "estimatedSeconds": 110,
+      "tags": [
+        "systems",
+        "parallel lines",
+        "no solution"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-alg-005",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Algebra",
+      "skill": "Linear inequalities in one or two variables",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "A climbing gym charges a one-time sign-up fee of $\\$40$ plus $\\$25$ per month. Which inequality represents the numbers of months, $m$, for which a member's total cost is at most $\\$340$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "$25 + 40m \\le 340$"
+        },
+        {
+          "id": "B",
+          "text": "$40 + 25m \\ge 340$"
+        },
+        {
+          "id": "C",
+          "text": "$65m \\le 340$"
+        },
+        {
+          "id": "D",
+          "text": "$40 + 25m \\le 340$"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "The total cost is the fixed fee plus the monthly charge times the number of months: $40 + 25m$. \"At most\" means less than or equal to, so $40 + 25m \\le 340$. Choice A swaps the fee and the rate, choice B reverses the inequality, and choice C wrongly charges the sign-up fee every month.",
+      "estimatedSeconds": 60,
+      "tags": [
+        "modeling",
+        "inequalities"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-adv-001",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Advanced Math",
+      "skill": "Equivalent expressions",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "Which of the following is equivalent to $(x + 5)^2 - (x - 5)^2$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "$0$"
+        },
+        {
+          "id": "B",
+          "text": "$10x$"
+        },
+        {
+          "id": "C",
+          "text": "$20x$"
+        },
+        {
+          "id": "D",
+          "text": "$50$"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "Expand each square: $(x+5)^2 = x^2 + 10x + 25$ and $(x-5)^2 = x^2 - 10x + 25$. Subtracting gives $20x$. You can also use the difference of squares: $(a + b)(a - b)$ with $a = x+5$ and $b = x-5$ gives $(2x)(10) = 20x$. Choice D comes from treating $(x+5)^2$ as $x^2 + 25$.",
+      "hint": "Try the difference of squares pattern $a^2 - b^2 = (a+b)(a-b)$.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "polynomials",
+        "difference of squares"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-adv-002",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Advanced Math",
+      "skill": "Nonlinear equations in one variable",
+      "difficulty": "medium",
+      "type": "numeric",
+      "prompt": "What is the positive difference between the two solutions of $x^2 - 8x + 15 = 0$?",
+      "correct": [
+        "2"
+      ],
+      "explanation": "Factor the quadratic: $x^2 - 8x + 15 = (x - 3)(x - 5)$, so the solutions are $x = 3$ and $x = 5$. Their positive difference is $5 - 3 = 2$.",
+      "hint": "Look for two numbers that multiply to 15 and add to $-8$.",
+      "estimatedSeconds": 75,
+      "tags": [
+        "quadratics",
+        "factoring"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-adv-003",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Advanced Math",
+      "skill": "Nonlinear functions",
+      "difficulty": "hard",
+      "type": "mcq",
+      "prompt": "The function $f$ is defined by $f(x) = a(x - 3)^2 + 2$, where $a$ is a constant. If $f(5) = 14$, what is the value of $f(0)$?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "27"
+        },
+        {
+          "id": "B",
+          "text": "33.5"
+        },
+        {
+          "id": "C",
+          "text": "56"
+        },
+        {
+          "id": "D",
+          "text": "29"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "Use $f(5) = 14$ to find $a$: $a(5-3)^2 + 2 = 14$, so $4a = 12$ and $a = 3$. Then $f(0) = 3(0 - 3)^2 + 2 = 3(9) + 2 = 29$. Choice A forgets to add the 2 at the end, choice B ignores the $+2$ when solving for $a$ (giving $a = 3.5$), and choice C treats $(5-3)^2$ as $2$ instead of $4$ (giving $a = 6$).",
+      "hint": "Use the given point to solve for $a$ before evaluating $f(0)$.",
+      "estimatedSeconds": 100,
+      "tags": [
+        "vertex form",
+        "function evaluation"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-adv-004",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Advanced Math",
+      "skill": "Nonlinear functions",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "A lab culture starts with 500 bacteria, and the number of bacteria doubles every 3 hours. Which function gives the number of bacteria, $P(t)$, after $t$ hours?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "$P(t) = 500(2)^{3t}$"
+        },
+        {
+          "id": "B",
+          "text": "$P(t) = 500(2)^{t/3}$"
+        },
+        {
+          "id": "C",
+          "text": "$P(t) = 500(3)^{t/2}$"
+        },
+        {
+          "id": "D",
+          "text": "$P(t) = 500 + 2^{t/3}$"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "Doubling means the growth factor is 2. The number of doublings after $t$ hours is $\\frac{t}{3}$, so $P(t) = 500(2)^{t/3}$. Check: at $t = 3$, $P = 1000$. Choice A doubles three times every hour, choice C swaps the factor and period, and choice D adds instead of multiplying.",
+      "estimatedSeconds": 75,
+      "tags": [
+        "exponential growth",
+        "modeling"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-adv-005",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Advanced Math",
+      "skill": "Nonlinear equations in one variable",
+      "difficulty": "hard",
+      "type": "numeric",
+      "prompt": "If $\\dfrac{x^2 - 9}{x - 3} = 10$, what is the value of $x$?",
+      "correct": [
+        "7"
+      ],
+      "explanation": "Factor the numerator: $x^2 - 9 = (x - 3)(x + 3)$. For $x \\ne 3$, the expression simplifies to $x + 3$. Setting $x + 3 = 10$ gives $x = 7$. The value $x = 3$ is excluded because it makes the denominator zero.",
+      "hint": "The numerator is a difference of squares.",
+      "estimatedSeconds": 90,
+      "tags": [
+        "rational expressions"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-psd-001",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Problem-Solving and Data Analysis",
+      "skill": "Ratios, rates, and proportional relationships",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "A car travels 168 miles using 6 gallons of gasoline. At the same rate, how many gallons will the car use to travel 252 miles?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "9"
+        },
+        {
+          "id": "C",
+          "text": "10"
+        },
+        {
+          "id": "D",
+          "text": "12"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "The car gets $\\frac{168}{6} = 28$ miles per gallon. Traveling 252 miles requires $\\frac{252}{28} = 9$ gallons.",
+      "estimatedSeconds": 60,
+      "tags": [
+        "unit rate"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-psd-002",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Problem-Solving and Data Analysis",
+      "skill": "Percentages",
+      "difficulty": "medium",
+      "type": "numeric",
+      "prompt": "The price of a jacket was $\\$80$. The price was increased by $25\\%$, and then the new price was decreased by $20\\%$. What is the final price of the jacket, in dollars?",
+      "correct": [
+        "80"
+      ],
+      "explanation": "After a $25\\%$ increase the price is $80 \\times 1.25 = 100$. A $20\\%$ decrease from $100$ gives $100 \\times 0.80 = 80$. The final price is $\\$80$. The changes do not simply combine to a $5\\%$ increase because the second percentage applies to a different base.",
+      "hint": "Apply each change as a multiplier: an increase of 25% multiplies by 1.25.",
+      "estimatedSeconds": 75,
+      "tags": [
+        "percent change",
+        "multipliers"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-psd-003",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Problem-Solving and Data Analysis",
+      "skill": "Probability and conditional probability",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The table shows the club choices of 80 students in grades 10 and 11. If a student in the debate club is selected at random, what is the probability that the student is in grade 11?",
+      "figure": {
+        "kind": "table",
+        "caption": "Club membership by grade",
+        "columns": [
+          "",
+          "Robotics",
+          "Debate",
+          "Total"
+        ],
+        "rows": [
+          [
+            "Grade 10",
+            "18",
+            "12",
+            "30"
+          ],
+          [
+            "Grade 11",
+            "22",
+            "28",
+            "50"
+          ],
+          [
+            "Total",
+            "40",
+            "40",
+            "80"
+          ]
+        ]
+      },
+      "choices": [
+        {
+          "id": "A",
+          "text": "$\\frac{7}{20}$"
+        },
+        {
+          "id": "B",
+          "text": "$\\frac{14}{25}$"
+        },
+        {
+          "id": "C",
+          "text": "$\\frac{3}{10}$"
+        },
+        {
+          "id": "D",
+          "text": "$\\frac{7}{10}$"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "The condition \"in the debate club\" restricts the group to the 40 debate students. Of those, 28 are in grade 11, so the probability is $\\frac{28}{40} = \\frac{7}{10}$. Choice A divides by all 80 students, and choice B divides by all 50 grade 11 students.",
+      "hint": "The phrase \"a student in the debate club\" tells you which total to use as the denominator.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "two-way table",
+        "conditional probability"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-psd-004",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Problem-Solving and Data Analysis",
+      "skill": "Two-variable data: models and scatterplots",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The scatterplot shows the number of hours eight students spent preparing for a quiz and their quiz scores. Which of the following is closest to the slope of a line of best fit for the data?",
+      "figure": {
+        "kind": "chart",
+        "chartType": "scatter",
+        "title": "Preparation time and quiz score",
+        "xLabel": "Hours of preparation",
+        "yLabel": "Quiz score",
+        "data": [
+          {
+            "x": 1,
+            "y": 52
+          },
+          {
+            "x": 2,
+            "y": 55
+          },
+          {
+            "x": 3,
+            "y": 61
+          },
+          {
+            "x": 4,
+            "y": 63
+          },
+          {
+            "x": 5,
+            "y": 68
+          },
+          {
+            "x": 6,
+            "y": 71
+          },
+          {
+            "x": 7,
+            "y": 75
+          },
+          {
+            "x": 8,
+            "y": 79
+          }
+        ]
+      },
+      "choices": [
+        {
+          "id": "A",
+          "text": "0.26"
+        },
+        {
+          "id": "B",
+          "text": "3.9"
+        },
+        {
+          "id": "C",
+          "text": "13.5"
+        },
+        {
+          "id": "D",
+          "text": "52"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "From 1 hour to 8 hours, scores rise from about 52 to about 79, an increase of about 27 points over 7 hours, or roughly $\\frac{27}{7} \\approx 3.9$ points per hour. (A least-squares fit gives a slope of about 3.86.) Choice A is the reciprocal of the slope, and choice D is close to the first score, not a rate.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "scatterplot",
+        "line of best fit",
+        "slope"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-geo-001",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Geometry and Trigonometry",
+      "skill": "Right triangles and trigonometry",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "In right triangle $ABC$ shown, angle $C$ is a right angle, $AC = 9$, and $BC = 12$. What is the value of $\\sin A$?",
+      "figure": {
+        "kind": "image",
+        "src": "/figures/right-triangle-abc.svg",
+        "alt": "Right triangle ABC with the right angle at C. Side AC is 9 units and side BC is 12 units. The hypotenuse AB is not labeled.",
+        "width": 320,
+        "height": 220
+      },
+      "choices": [
+        {
+          "id": "A",
+          "text": "$\\frac{3}{5}$"
+        },
+        {
+          "id": "B",
+          "text": "$\\frac{3}{4}$"
+        },
+        {
+          "id": "C",
+          "text": "$\\frac{4}{5}$"
+        },
+        {
+          "id": "D",
+          "text": "$\\frac{4}{3}$"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "The hypotenuse is $AB = \\sqrt{9^2 + 12^2} = \\sqrt{225} = 15$. The side opposite angle $A$ is $BC = 12$, so $\\sin A = \\frac{12}{15} = \\frac{4}{5}$. Choice A is $\\cos A$, and choice D is $\\tan A$.",
+      "hint": "SOH: sine is opposite over hypotenuse. Find the hypotenuse with the Pythagorean theorem.",
+      "estimatedSeconds": 85,
+      "tags": [
+        "SOH CAH TOA",
+        "Pythagorean theorem"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-geo-002",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Geometry and Trigonometry",
+      "skill": "Circles",
+      "difficulty": "hard",
+      "type": "numeric",
+      "prompt": "A circle in the $xy$-plane has the equation $x^2 + y^2 - 6x + 8y = 0$. What is the radius of the circle?",
+      "correct": [
+        "5"
+      ],
+      "explanation": "Complete the square in each variable: $x^2 - 6x + 9 + y^2 + 8y + 16 = 9 + 16$, which gives $(x - 3)^2 + (y + 4)^2 = 25$. A circle $(x-h)^2 + (y-k)^2 = r^2$ has radius $r = \\sqrt{25} = 5$.",
+      "hint": "Complete the square for the $x$ terms and the $y$ terms separately.",
+      "estimatedSeconds": 110,
+      "tags": [
+        "completing the square",
+        "circle equation"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-geo-003",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Geometry and Trigonometry",
+      "skill": "Area and volume",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "A rectangular box has a length of 6 centimeters, a width of 4 centimeters, and a volume of 168 cubic centimeters. What is the height of the box, in centimeters?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        },
+        {
+          "id": "C",
+          "text": "7"
+        },
+        {
+          "id": "D",
+          "text": "8"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "Volume equals length times width times height, so $168 = 6 \\cdot 4 \\cdot h = 24h$. Dividing gives $h = 7$ centimeters.",
+      "estimatedSeconds": 50,
+      "tags": [
+        "volume",
+        "rectangular prism"
+      ],
+      "version": 1
+    },
+    {
+      "id": "sat-math-geo-004",
+      "exam": "sat",
+      "course": "sat-math",
+      "section": "Math",
+      "topic": "Geometry and Trigonometry",
+      "skill": "Lines, angles, and triangles",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "The measures of the three angles of a triangle are $x^\\circ$, $2x^\\circ$, and $(3x - 30)^\\circ$. What is the measure, in degrees, of the largest angle of the triangle?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "35"
+        },
+        {
+          "id": "B",
+          "text": "70"
+        },
+        {
+          "id": "C",
+          "text": "105"
+        },
+        {
+          "id": "D",
+          "text": "75"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "The angles of a triangle sum to $180^\\circ$: $x + 2x + 3x - 30 = 180$, so $6x = 210$ and $x = 35$. The angles are $35^\\circ$, $70^\\circ$, and $3(35) - 30 = 75^\\circ$. The largest is $75^\\circ$. Choice A is $x$ itself, and choice C is $3x$ without subtracting 30.",
+      "estimatedSeconds": 75,
+      "tags": [
+        "triangle angle sum"
+      ],
+      "version": 1
+    }
+  ]
+}

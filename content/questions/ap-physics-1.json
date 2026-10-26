@@ -1,0 +1,162 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "ap-phys-u1-001",
+      "exam": "ap",
+      "course": "ap-physics-1",
+      "section": "Unit 1: Kinematics",
+      "topic": "Constant acceleration",
+      "skill": "Kinematic equations",
+      "difficulty": "easy",
+      "type": "numeric",
+      "prompt": "A car starts from rest and accelerates uniformly at $3.0 \\text{ m/s}^2$ for $4.0$ seconds. How far, in meters, does the car travel during this time?",
+      "correct": [
+        "24"
+      ],
+      "tolerance": 0.01,
+      "explanation": "With an initial velocity of zero, $\\Delta x = \\frac{1}{2}at^2 = \\frac{1}{2}(3.0)(4.0)^2 = 24$ meters.",
+      "hint": "Use $\\Delta x = v_0 t + \\frac{1}{2} a t^2$ with $v_0 = 0$.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "kinematics"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-phys-u2-001",
+      "exam": "ap",
+      "course": "ap-physics-1",
+      "section": "Unit 2: Force and Translational Dynamics",
+      "topic": "Newton's second law",
+      "skill": "Net force and acceleration",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "A net force of 12 N acts on a 4.0 kg cart on a level track. What is the magnitude of the cart's acceleration?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "48 m/s²"
+        },
+        {
+          "id": "B",
+          "text": "0.33 m/s²"
+        },
+        {
+          "id": "C",
+          "text": "8.0 m/s²"
+        },
+        {
+          "id": "D",
+          "text": "3.0 m/s²"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "Newton's second law gives $a = \\frac{F_{net}}{m} = \\frac{12 \\text{ N}}{4.0 \\text{ kg}} = 3.0 \\text{ m/s}^2$. Choice A multiplies instead of dividing, and choice B inverts the ratio.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "Newton's laws"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-phys-u3-001",
+      "exam": "ap",
+      "course": "ap-physics-1",
+      "section": "Unit 3: Work, Energy, and Power",
+      "topic": "Conservation of energy",
+      "skill": "Gravitational potential to kinetic energy",
+      "difficulty": "medium",
+      "type": "numeric",
+      "prompt": "A ball is dropped from rest from a height of 5.0 m. Neglecting air resistance and using $g = 10 \\text{ m/s}^2$, what is the ball's speed, in m/s, just before it hits the ground?",
+      "correct": [
+        "10"
+      ],
+      "tolerance": 0.05,
+      "explanation": "Setting $mgh = \\frac{1}{2}mv^2$ gives $v = \\sqrt{2gh} = \\sqrt{2(10)(5.0)} = \\sqrt{100} = 10$ m/s. The mass cancels.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "energy conservation"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-phys-u4-001",
+      "exam": "ap",
+      "course": "ap-physics-1",
+      "section": "Unit 4: Linear Momentum",
+      "topic": "Collisions",
+      "skill": "Perfectly inelastic collisions",
+      "difficulty": "medium",
+      "type": "mcq",
+      "prompt": "A 2.0 kg cart moving at 3.0 m/s collides with and sticks to a stationary 1.0 kg cart. What is the speed of the carts immediately after the collision?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "1.0 m/s"
+        },
+        {
+          "id": "B",
+          "text": "2.0 m/s"
+        },
+        {
+          "id": "C",
+          "text": "3.0 m/s"
+        },
+        {
+          "id": "D",
+          "text": "6.0 m/s"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "Momentum is conserved: $(2.0)(3.0) + (1.0)(0) = (3.0)v_f$, so $v_f = \\frac{6.0}{3.0} = 2.0$ m/s. Choice D is the total momentum in kg·m/s, not a speed.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "momentum"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-phys-u2-002",
+      "exam": "ap",
+      "course": "ap-physics-1",
+      "section": "Unit 2: Force and Translational Dynamics",
+      "topic": "Circular motion",
+      "skill": "Centripetal force",
+      "difficulty": "easy",
+      "type": "mcq",
+      "prompt": "An object moves in a horizontal circle at constant speed. What is the direction of the net force on the object?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Tangent to the circle, in the direction of motion"
+        },
+        {
+          "id": "B",
+          "text": "Directly away from the center of the circle"
+        },
+        {
+          "id": "C",
+          "text": "Toward the center of the circle"
+        },
+        {
+          "id": "D",
+          "text": "There is no net force because the speed is constant"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "Even at constant speed, the velocity's direction changes continuously, so the object accelerates toward the center (centripetal acceleration). By Newton's second law, the net force also points toward the center. Constant speed does not mean constant velocity.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "circular motion"
+      ],
+      "version": 1
+    }
+  ]
+}

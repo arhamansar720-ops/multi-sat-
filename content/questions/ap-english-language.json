@@ -1,0 +1,401 @@
+{
+  "$schema": "./question-file.schema.json",
+  "questions": [
+    {
+      "id": "ap-lang-p1-001",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Rhetorical Situation",
+      "topic": "Purpose",
+      "skill": "Identifying the writer's purpose",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 1 (original op-ed)",
+        "text": "When my town proposed closing its branch library to save money, the arguments seemed reasonable at first. Fewer people borrow books than a decade ago; most residents carry the internet in their pockets. But on a Tuesday afternoon I counted forty-three people in a building that is supposedly obsolete. A retired machinist was learning to file his taxes online. Two high school students were printing college applications because neither had a printer at home. A mother read picture books to her twins while she waited for a call about a job interview. None of them came for a book, and all of them came for the library. The question is not whether we still need places that lend paper; it is whether we still need places that lend help, quietly and without asking anything in return. I suspect the answer is the same as it was a century ago.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The writer's primary purpose in the passage is to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "criticize residents for no longer borrowing books"
+        },
+        {
+          "id": "B",
+          "text": "argue that the library remains valuable by redefining what it provides"
+        },
+        {
+          "id": "C",
+          "text": "explain the history of public libraries in the writer's town"
+        },
+        {
+          "id": "D",
+          "text": "propose a new way to fund the branch library"
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "The writer concedes that fewer people borrow books, then uses observed examples to argue that the library's value lies in the help it provides, not just in lending books. The passage does not criticize residents, recount history, or propose a funding plan.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p1-002",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Claims and Evidence",
+      "topic": "Evidence",
+      "skill": "Function of evidence",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 1 (original op-ed)",
+        "text": "When my town proposed closing its branch library to save money, the arguments seemed reasonable at first. Fewer people borrow books than a decade ago; most residents carry the internet in their pockets. But on a Tuesday afternoon I counted forty-three people in a building that is supposedly obsolete. A retired machinist was learning to file his taxes online. Two high school students were printing college applications because neither had a printer at home. A mother read picture books to her twins while she waited for a call about a job interview. None of them came for a book, and all of them came for the library. The question is not whether we still need places that lend paper; it is whether we still need places that lend help, quietly and without asking anything in return. I suspect the answer is the same as it was a century ago.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The examples of the machinist, the students, and the mother primarily serve to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "demonstrate statistical trends in library use"
+        },
+        {
+          "id": "B",
+          "text": "illustrate that the library's collection is outdated"
+        },
+        {
+          "id": "C",
+          "text": "provide concrete evidence that challenges the assumption that the library is obsolete"
+        },
+        {
+          "id": "D",
+          "text": "suggest that the library should extend its hours"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "The writer counts visitors and then describes specific people using the library's services, which directly undercuts the claim that the building is \"supposedly obsolete.\" The examples are anecdotal rather than statistical, and they do not discuss the collection or hours.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p1-003",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Style",
+      "topic": "Sentence-level choices",
+      "skill": "Syntax and parallelism",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 1 (original op-ed)",
+        "text": "When my town proposed closing its branch library to save money, the arguments seemed reasonable at first. Fewer people borrow books than a decade ago; most residents carry the internet in their pockets. But on a Tuesday afternoon I counted forty-three people in a building that is supposedly obsolete. A retired machinist was learning to file his taxes online. Two high school students were printing college applications because neither had a printer at home. A mother read picture books to her twins while she waited for a call about a job interview. None of them came for a book, and all of them came for the library. The question is not whether we still need places that lend paper; it is whether we still need places that lend help, quietly and without asking anything in return. I suspect the answer is the same as it was a century ago.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The sentence \"None of them came for a book, and all of them came for the library\" primarily uses",
+      "choices": [
+        {
+          "id": "A",
+          "text": "an appeal to authority to support the writer's claim"
+        },
+        {
+          "id": "B",
+          "text": "hyperbole to exaggerate the number of visitors"
+        },
+        {
+          "id": "C",
+          "text": "an extended metaphor comparing the library to a home"
+        },
+        {
+          "id": "D",
+          "text": "parallel structure and contrast to distinguish books from the services a library offers"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "The sentence balances two parallel clauses with opposite quantifiers (\"None\" and \"all\") and contrasting objects (\"a book\" and \"the library\"). This antithesis sharpens the writer's distinction between the library as a book lender and the library as a place of help. No authority is cited, and the statement is not exaggerated or metaphorical.",
+      "estimatedSeconds": 80,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p2-001",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Rhetorical Situation",
+      "topic": "Audience",
+      "skill": "Rhetorical choices and audience",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 2 (original commencement speech excerpt)",
+        "text": "Graduates, you have been told for years that you can be anything. That is not quite true, and I think you deserve the truth on a day like this. You cannot be anything. You can, however, become something, and becoming is slower, stranger, and far more interesting than being. Becoming requires you to be bad at things in public. It requires you to ask questions that reveal exactly what you do not know. The people you admire most did not skip this stage; they simply refused to let it embarrass them out of the room.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The speaker most likely begins by contradicting a familiar statement in order to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "capture the audience's attention and establish a candid tone"
+        },
+        {
+          "id": "B",
+          "text": "criticize the graduates' former teachers"
+        },
+        {
+          "id": "C",
+          "text": "signal that the speech will be humorous throughout"
+        },
+        {
+          "id": "D",
+          "text": "list the speaker's professional credentials"
+        }
+      ],
+      "correct": [
+        "A"
+      ],
+      "explanation": "Opening by challenging a cliché graduates have heard many times (\"you can be anything\") is surprising, which captures attention, and the speaker frames it as telling \"the truth,\" establishing candor. The speaker does not blame teachers, sustain humor, or discuss credentials.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p2-002",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Reasoning and Organization",
+      "topic": "Line of reasoning",
+      "skill": "Developing a claim through distinction",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 2 (original commencement speech excerpt)",
+        "text": "Graduates, you have been told for years that you can be anything. That is not quite true, and I think you deserve the truth on a day like this. You cannot be anything. You can, however, become something, and becoming is slower, stranger, and far more interesting than being. Becoming requires you to be bad at things in public. It requires you to ask questions that reveal exactly what you do not know. The people you admire most did not skip this stage; they simply refused to let it embarrass them out of the room.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The distinction between \"being\" and \"becoming\" functions mainly to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "contrast two specific careers the graduates might pursue"
+        },
+        {
+          "id": "B",
+          "text": "argue that ambition is unnecessary for success"
+        },
+        {
+          "id": "C",
+          "text": "reframe achievement as a gradual process that includes public failure"
+        },
+        {
+          "id": "D",
+          "text": "dismiss the people the graduates admire"
+        }
+      ],
+      "correct": [
+        "C"
+      ],
+      "explanation": "The speaker replaces the idea of instantly \"being\" anything with \"becoming,\" which is \"slower\" and requires being \"bad at things in public.\" The distinction reframes success as a process that includes failure. The speaker praises, rather than dismisses, admired people and never argues against ambition.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p2-003",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Style",
+      "topic": "Figurative language",
+      "skill": "Interpreting figurative language",
+      "difficulty": "hard",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 2 (original commencement speech excerpt)",
+        "text": "Graduates, you have been told for years that you can be anything. That is not quite true, and I think you deserve the truth on a day like this. You cannot be anything. You can, however, become something, and becoming is slower, stranger, and far more interesting than being. Becoming requires you to be bad at things in public. It requires you to ask questions that reveal exactly what you do not know. The people you admire most did not skip this stage; they simply refused to let it embarrass them out of the room.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "In the final sentence, the phrase \"embarrass them out of the room\" most nearly suggests that",
+      "choices": [
+        {
+          "id": "A",
+          "text": "embarrassment can drive people to abandon an effort, a pressure the admired people resisted"
+        },
+        {
+          "id": "B",
+          "text": "the admired people literally left rooms when they felt embarrassed"
+        },
+        {
+          "id": "C",
+          "text": "public speaking is the most difficult part of learning"
+        },
+        {
+          "id": "D",
+          "text": "the graduates should avoid situations that might embarrass them"
+        }
+      ],
+      "correct": [
+        "A"
+      ],
+      "explanation": "The phrase figuratively presents embarrassment as a force that can push people to quit. The speaker says admired people \"refused to let it\" do so, meaning they persisted despite awkwardness. The phrase is not literal, and the speech encourages, rather than discourages, risking embarrassment.",
+      "estimatedSeconds": 75,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p3-001",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Claims and Evidence",
+      "topic": "Counterarguments",
+      "skill": "Responding to counterarguments",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 3 (original editorial)",
+        "text": "Most of us will never see the Milky Way from our own backyards, and we have largely stopped noticing the loss. Artificial light at night has grown brighter and more widespread for decades, washing out the stars over cities and suburbs alike. Defenders of bright streetlights point to safety, and the concern is real: people deserve to see where they are walking. Yet much outdoor lighting is poorly aimed, spilling sideways into bedrooms and upward into the sky, where it illuminates nothing a pedestrian needs. Shielded fixtures that direct light downward can keep sidewalks visible while restoring some of the darkness overhead. We need not choose between safety and the stars; we need only choose better lamps.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The writer acknowledges concerns about safety primarily in order to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "reject the idea that safety matters"
+        },
+        {
+          "id": "B",
+          "text": "shift the discussion to the cost of electricity"
+        },
+        {
+          "id": "C",
+          "text": "cite expert testimony about crime rates"
+        },
+        {
+          "id": "D",
+          "text": "concede a legitimate point before arguing that it does not require current lighting practices"
+        }
+      ],
+      "correct": [
+        "D"
+      ],
+      "explanation": "The writer grants that \"the concern is real\" and then argues that poorly aimed lights do not serve pedestrians, so better fixtures can preserve safety and darkness. This is a concession followed by a rebuttal. The writer does not dismiss safety, discuss cost, or cite experts.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p3-002",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Claims and Evidence",
+      "topic": "Thesis",
+      "skill": "Identifying the main claim",
+      "difficulty": "easy",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 3 (original editorial)",
+        "text": "Most of us will never see the Milky Way from our own backyards, and we have largely stopped noticing the loss. Artificial light at night has grown brighter and more widespread for decades, washing out the stars over cities and suburbs alike. Defenders of bright streetlights point to safety, and the concern is real: people deserve to see where they are walking. Yet much outdoor lighting is poorly aimed, spilling sideways into bedrooms and upward into the sky, where it illuminates nothing a pedestrian needs. Shielded fixtures that direct light downward can keep sidewalks visible while restoring some of the darkness overhead. We need not choose between safety and the stars; we need only choose better lamps.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "Which choice best states the writer's main claim?",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Streetlights should be removed from residential neighborhoods."
+        },
+        {
+          "id": "B",
+          "text": "Better-designed outdoor lighting can maintain safety while reducing light pollution."
+        },
+        {
+          "id": "C",
+          "text": "Safety is more important than the ability to see the stars."
+        },
+        {
+          "id": "D",
+          "text": "The Milky Way is no longer visible anywhere on Earth."
+        }
+      ],
+      "correct": [
+        "B"
+      ],
+      "explanation": "The writer argues that shielded, downward-facing fixtures can keep sidewalks visible while restoring the night sky, culminating in \"we need only choose better lamps.\" The writer never calls for removing streetlights, does not rank safety above the stars, and says the Milky Way is hard to see from backyards, not invisible everywhere.",
+      "estimatedSeconds": 55,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    },
+    {
+      "id": "ap-lang-p3-003",
+      "exam": "ap",
+      "course": "ap-english-language",
+      "section": "Style",
+      "topic": "Sentence-level choices",
+      "skill": "Effect of parallel structure",
+      "difficulty": "medium",
+      "type": "mcq",
+      "passage": {
+        "title": "Passage 3 (original editorial)",
+        "text": "Most of us will never see the Milky Way from our own backyards, and we have largely stopped noticing the loss. Artificial light at night has grown brighter and more widespread for decades, washing out the stars over cities and suburbs alike. Defenders of bright streetlights point to safety, and the concern is real: people deserve to see where they are walking. Yet much outdoor lighting is poorly aimed, spilling sideways into bedrooms and upward into the sky, where it illuminates nothing a pedestrian needs. Shielded fixtures that direct light downward can keep sidewalks visible while restoring some of the darkness overhead. We need not choose between safety and the stars; we need only choose better lamps.",
+        "source": "Original passage written for practice"
+      },
+      "prompt": "The final sentence, \"We need not choose between safety and the stars; we need only choose better lamps,\" primarily serves to",
+      "choices": [
+        {
+          "id": "A",
+          "text": "present the writer's solution as simple and the apparent dilemma as a false choice"
+        },
+        {
+          "id": "B",
+          "text": "introduce a new counterargument for the reader to consider"
+        },
+        {
+          "id": "C",
+          "text": "express the writer's uncertainty about the proposed solution"
+        },
+        {
+          "id": "D",
+          "text": "summarize statistical evidence presented earlier in the passage"
+        }
+      ],
+      "correct": [
+        "A"
+      ],
+      "explanation": "The parallel phrasing (\"need not choose ... need only choose\") contrasts a supposed either-or dilemma with a single practical step, framing the trade-off as false and the solution as easy. The sentence is a confident conclusion rather than a new counterargument or a hedge, and the passage contains no statistics.",
+      "estimatedSeconds": 70,
+      "tags": [
+        "rhetoric",
+        "passage-based"
+      ],
+      "version": 1
+    }
+  ]
+}
