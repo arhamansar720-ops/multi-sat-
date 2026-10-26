@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "katex/dist/katex.min.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens. Light theme: warm white, near-black text, cobalt primary, restrained violet. */
+:root {
+  --radius: 0.75rem;
+  --background: oklch(0.987 0.004 85);
+  --foreground: oklch(0.18 0.012 265);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+  --muted: oklch(0.962 0.005 265);
+  --muted-foreground: oklch(0.47 0.015 265);
+  --primary: oklch(0.52 0.235 265);
+  --primary-foreground: oklch(0.99 0.003 265);
+  --primary-soft: oklch(0.95 0.035 265);
+  --secondary: oklch(0.955 0.008 265);
+  --secondary-foreground: oklch(0.22 0.015 265);
+  --violet: oklch(0.54 0.2 295);
+  --violet-soft: oklch(0.955 0.03 295);
+  --success: oklch(0.52 0.14 155);
+  --success-soft: oklch(0.955 0.04 155);
+  --warning: oklch(0.6 0.15 65);
+  --warning-soft: oklch(0.965 0.04 80);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-soft: oklch(0.96 0.03 25);
+  --border: oklch(0.915 0.006 265);
+  --input: oklch(0.89 0.008 265);
+  --ring: oklch(0.6 0.2 265);
+  --shadow-card: 0 1px 2px oklch(0.2 0.02 265 / 0.04), 0 4px 16px -8px oklch(0.2 0.02 265 / 0.08);
+}
+
+.dark {
+  --background: oklch(0.155 0.01 265);
+  --foreground: oklch(0.95 0.005 265);
+  --card: oklch(0.195 0.012 265);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.21 0.012 265);
+  --popover-foreground: var(--foreground);
+  --muted: oklch(0.235 0.012 265);
+  --muted-foreground: oklch(0.71 0.015 265);
+  --primary: oklch(0.67 0.18 265);
+  --primary-foreground: oklch(0.14 0.02 265);
+  --primary-soft: oklch(0.28 0.06 265);
+  --secondary: oklch(0.25 0.012 265);
+  --secondary-foreground: oklch(0.93 0.005 265);
+  --violet: oklch(0.7 0.16 295);
+  --violet-soft: oklch(0.28 0.06 295);
+  --success: oklch(0.72 0.15 155);
+  --success-soft: oklch(0.27 0.05 155);
+  --warning: oklch(0.78 0.14 75);
+  --warning-soft: oklch(0.29 0.05 75);
+  --destructive: oklch(0.7 0.17 25);
+  --destructive-soft: oklch(0.29 0.06 25);
+  --border: oklch(0.285 0.012 265);
+  --input: oklch(0.32 0.014 265);
+  --ring: oklch(0.67 0.18 265);
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px -12px oklch(0 0 0 / 0.5);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --shadow-card: var(--shadow-card);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--primary-soft);
+  }
+}
+
+/* Reading passages and question text */
+.prose-question p + p {
+  margin-top: 0.75rem;
+}
+.prose-question ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-question pre {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+.prose-question .katex-display {
+  margin: 0.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.blank {
+  display: inline-block;
+  min-width: 3.5rem;
+  border-bottom: 2px solid currentColor;
+  margin: 0 0.15rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
