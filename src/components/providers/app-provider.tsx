@@ -30,6 +30,8 @@ interface AppContextValue {
   continueAsGuest: (displayName?: string) => Promise<void>;
   signOut: () => Promise<void>;
   storageAvailable: boolean;
+  /** True when Supabase is configured but couldn't be reached. */
+  backendUnreachable: boolean;
 }
 
 const AppContext = React.createContext<AppContextValue | null>(null);
@@ -43,6 +45,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [activityLoading, setActivityLoading] = React.useState(true);
   const [activityError, setActivityError] = React.useState<string | null>(null);
   const [storageAvailable, setStorageAvailable] = React.useState(true);
+  const [backendUnreachable, setBackendUnreachable] = React.useState(false);
 
   React.useEffect(() => {
     setStorageAvailable(localStore.storageAvailable());
@@ -50,13 +53,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     supabase.auth
       .getUser()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
+        setBackendUnreachable(Boolean(error && (error.name === "AuthRetryableFetchError" || /fetch|network/i.test(error.message))));
         const u = data.user;
         setUser(u ? { id: u.id, email: u.email ?? null, isGuest: Boolean(u.is_anonymous) } : null);
       })
       .catch(() => {
-        if (!cancelled) setUser(null);
+        if (!cancelled) {
+          setUser(null);
+          setBackendUnreachable(true);
+        }
       })
       .finally(() => {
         if (!cancelled) setAuthReady(true);
@@ -100,6 +107,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (existing.user) return;
       const { error } = await supabase.auth.signInAnonymously({ options: { data: displayName ? { display_name: displayName } : {} } });
       if (error) {
+        if (error.name === "AuthRetryableFetchError" || /fetch|network/i.test(error.message)) {
+          setBackendUnreachable(true);
+          throw new AppError("Online services are temporarily unavailable. Solo practice still works and saves on this device.", "network");
+        }
         throw new AppError(
           /anonymous/i.test(error.message)
             ? "Guest play is turned off on this server. Create a free account to play online."
@@ -129,6 +140,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     continueAsGuest,
     signOut,
     storageAvailable,
+    backendUnreachable,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

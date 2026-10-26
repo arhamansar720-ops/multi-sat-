@@ -6,12 +6,20 @@ import { useApp } from "@/components/providers/app-provider";
 
 /** Always tells the student where their data is stored. Never silent. */
 export function ModeBanner() {
-  const { config, authReady, user, storageAvailable } = useApp();
+  const { config, authReady, user, storageAvailable, backendUnreachable } = useApp();
   if (config.misconfigured) {
     return (
       <div role="status" className="border-b border-warning/30 bg-warning-soft px-4 py-2 text-center text-xs sm:text-sm">
         <TriangleAlert className="mr-1.5 inline size-4 text-warning" aria-hidden />
         <strong>Configuration problem:</strong> {config.problems.join(" ")} Running a local preview: progress stays in this browser and online features are off.
+      </div>
+    );
+  }
+  if (config.mode === "connected" && backendUnreachable) {
+    return (
+      <div role="alert" className="border-b border-warning/30 bg-warning-soft px-4 py-2 text-center text-xs sm:text-sm">
+        <TriangleAlert className="mr-1.5 inline size-4 text-warning" aria-hidden />
+        <strong>Online services are temporarily unavailable.</strong> Solo practice still works and is saved on this device. Multiplayer, friends, and account sync will return when the connection does.
       </div>
     );
   }

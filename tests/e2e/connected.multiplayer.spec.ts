@@ -69,6 +69,7 @@ test("TEST 6-7: two players share a live, server-validated match", async ({ brow
   await guest.goto(`/play/${code}`);
   await guest.getByLabel("Display name").fill("Guesty");
   await guest.getByRole("button", { name: "Continue as guest" }).click();
+  await expect(guest.getByRole("button", { name: "Join room" })).toBeVisible();
   const preview = await (await guest.request.get(`/api/rooms/${code}`)).json();
   expect(preview.state).toBeUndefined();
   expect(preview.preview.code).toBe(code);

@@ -35,11 +35,17 @@ function SignUpForm() {
     const redirect = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     if (user?.isGuest) {
       // Upgrade the guest account in place so existing progress is kept.
-      const { error } = await supabase.auth.updateUser({ email: email.trim(), password, data: { display_name: parsedName.data } }, { emailRedirectTo: redirect });
+      const { data, error } = await supabase.auth.updateUser({ email: email.trim(), password, data: { display_name: parsedName.data } }, { emailRedirectTo: redirect });
       setBusy(false);
-      if (error) return setError(error.message);
+      if (error) return setError(/registered|already/i.test(error.message) ? "An account with that email already exists. Try signing in." : error.message);
       await fetch("/api/me/preferences", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName: parsedName.data }) });
-      setSentTo(email.trim());
+      if (data.user?.email === email.trim().toLowerCase()) {
+        toast.success("Account created. Your guest progress is saved.");
+        await refreshActivity();
+        router.push(next);
+      } else {
+        setSentTo(email.trim());
+      }
       return;
     }
     const { data, error } = await supabase.auth.signUp({
