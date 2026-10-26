@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarCheck, ClipboardList, Crosshair, Loader2, RotateCcw, Timer, Zap } from "lucide-react";
+import { CalendarCheck, ClipboardList, Crosshair, Loader2, RotateCcw, Search, Timer, Zap } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { useApp } from "@/components/providers/app-provider";
@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trackCounts } from "@/lib/content/bank";
 import { TRACKS } from "@/lib/content/catalog";
+import { directoryCourseForTrack } from "@/lib/content/course-directory";
+import { PRACTICE_TESTS, testQuestionCount } from "@/lib/content/tests";
+import { Input } from "@/components/ui/input";
 import { DAILY_CHALLENGE_SIZE, dailyKeyFor } from "@/lib/engine/selection";
 
 const MODES = [
@@ -30,7 +33,32 @@ export default function StudyPage() {
 
   return (
     <>
-      <PageHeader title="Study" description="Choose how you want to practice, then pick an exam. Every question is original and includes an explanation." />
+      <PageHeader title="Study" description="Take a full practice test, or choose a study mode and an exam. Every question is original and includes an explanation." />
+
+      <form action="/courses" className="relative mb-6" role="search">
+        <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <Input name="q" type="search" placeholder="Find your course: SAT, PSAT, APUSH, AP Calc, AP Bio…" aria-label="Search courses" className="h-12 rounded-2xl pl-12 text-base" />
+      </form>
+
+      <section aria-labelledby="tests-heading" className="mb-8">
+        <div className="mb-3 flex items-end justify-between gap-2">
+          <h2 id="tests-heading" className="text-lg font-semibold">Practice tests</h2>
+          <Link href="/courses" className="text-sm font-medium text-primary hover:underline">All courses →</Link>
+        </div>
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {PRACTICE_TESTS.map((t) => (
+            <li key={t.id}>
+              <Link href={`/courses/${directoryCourseForTrack(t.track)?.slug ?? ""}`} className="flex h-full flex-col rounded-2xl border bg-card p-4 shadow-card transition-colors hover:border-primary/40">
+                <ClipboardList className="mb-2 size-5 text-primary" aria-hidden />
+                <span className="font-semibold leading-snug">{t.title}</span>
+                <span className="mt-1 text-xs text-muted-foreground">
+                  {t.modules.length} module{t.modules.length === 1 ? "" : "s"} · {testQuestionCount(t)} questions · {t.modules.reduce((m, x) => m + x.minutes, 0)} min
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section aria-labelledby="daily-heading" className="mb-8 flex flex-col gap-4 rounded-2xl border bg-gradient-to-br from-primary-soft to-violet-soft p-5 sm:flex-row sm:items-center sm:p-6">
         <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-card text-primary shadow-card">
@@ -96,6 +124,9 @@ export default function StudyPage() {
               <p className="flex-1 text-sm text-muted-foreground">{t.description}</p>
               <div className="flex flex-wrap gap-2">
                 <Button asChild size="sm">
+                  <Link href={`/courses/${directoryCourseForTrack(t.slug)?.slug ?? t.slug}`}>Practice test</Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
                   <Link href={`/study/${t.slug}?mode=quick`}>Practice</Link>
                 </Button>
                 <Button asChild size="sm" variant="outline">

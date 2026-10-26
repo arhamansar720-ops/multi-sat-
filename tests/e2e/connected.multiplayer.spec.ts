@@ -120,3 +120,34 @@ test("invalid and unknown room codes give clear errors", async ({ page }) => {
   await page.goto("/play/abc");
   await expect(page.getByText("That isn't a valid room code")).toBeVisible();
 });
+
+test("practice test in connected mode: server receives the autosaved draft and grades the test", async ({ page }) => {
+  await signUp(page, "Tester");
+  await page.goto("/courses/ap-biology");
+  await page.getByRole("button", { name: "Start test" }).click();
+  await page.waitForURL(/\/practice\//);
+  const sessionId = page.url().split("/").pop();
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).first().click();
+  await page.getByRole("radio").first().click();
+  // Autosave is throttled to about a second for answer changes.
+  await expect
+    .poll(async () => {
+      const res = await (await page.request.get(`/api/sessions/${sessionId}`)).json();
+      return Object.keys(res.draft?.answers ?? {}).length;
+    }, { timeout: 10_000 })
+    .toBe(1);
+  const { session } = await (await page.request.get(`/api/sessions/${sessionId}`)).json();
+  expect(session.config).toMatchObject({ mode: "test", testId: "ap-biology-practice-test-1", feedback: "end" });
+  expect(session.deadline).not.toBeNull();
+
+  for (let i = 0; i < 5; i++) {
+    const radios = page.getByRole("radio");
+    if ((await radios.count()) > 0) await radios.first().click();
+    else await page.getByLabel("Your answer").fill("0.5");
+    await page.getByRole("button", { name: /^Next/ }).click();
+  }
+  await page.getByRole("button", { name: "Submit test" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Submit test" }).click();
+  await page.waitForURL(/\/results\//);
+  await expect(page.getByRole("heading", { name: "Score report" })).toBeVisible();
+});

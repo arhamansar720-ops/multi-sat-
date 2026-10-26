@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { AnswerResponse, Difficulty } from "@/lib/content/types";
 
-export const STUDY_MODES = ["quick", "focus", "timed", "review", "daily", "simulation"] as const;
+export const STUDY_MODES = ["quick", "focus", "timed", "review", "daily", "simulation", "test"] as const;
 export type StudyMode = (typeof STUDY_MODES)[number];
 
 export const MODE_LABELS: Record<StudyMode, string> = {
@@ -11,6 +11,7 @@ export const MODE_LABELS: Record<StudyMode, string> = {
   review: "Review",
   daily: "Daily Challenge",
   simulation: "Exam Simulation",
+  test: "Practice Test",
 };
 
 export const sessionConfigSchema = z.object({
@@ -27,6 +28,8 @@ export const sessionConfigSchema = z.object({
   hints: z.boolean(),
   /** Explicit question list (review mode). Validated against the bank. */
   questionIds: z.array(z.string().max(64)).max(60).optional(),
+  /** Practice test form id (mode "test"). */
+  testId: z.string().max(80).optional(),
 });
 
 export type SessionConfig = z.infer<typeof sessionConfigSchema>;
@@ -53,6 +56,12 @@ export interface SessionDraft {
   currentIndex: number;
   timeSpentMs: Record<string, number>;
   updatedAt: string;
+  /** Practice tests: module currently in progress (earlier modules are locked). */
+  moduleIndex?: number;
+  /** Practice tests: ISO start time of each module, keyed by module index. */
+  moduleStartedAt?: Record<string, string>;
+  /** Practice tests: ISO end of the current break, if on a break. */
+  breakUntil?: string | null;
 }
 
 export interface ResultItem {

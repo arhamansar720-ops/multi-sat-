@@ -11,6 +11,9 @@ const draftSchema = z.object({
   currentIndex: z.number().int().min(0).max(60),
   timeSpentMs: z.record(z.string().max(64), z.number().min(0).max(86_400_000)),
   updatedAt: z.string().max(40),
+  moduleIndex: z.number().int().min(0).max(8).optional(),
+  moduleStartedAt: z.record(z.string().max(2), z.string().max(40)).optional(),
+  breakUntil: z.string().max(40).nullable().optional(),
 });
 
 export const PUT = route(async (request: Request, ctx: RouteContext<"/api/sessions/[id]/draft">) => {

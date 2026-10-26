@@ -6,6 +6,8 @@
 
 ## Features
 
+- **Course search** (`/courses`): every SAT Suite and AP course (43), searchable by name, nickname ("APUSH", "calc", "APES"), or subject. Each course hub lists StudyDuel practice tests, skill practice, and links to College Board's own free materials: the official practice tests in Bluebook and released AP past exam questions. StudyDuel links to that content and never copies it.
+- **Bluebook-style practice tests**: fixed test forms in `content/tests/practice-tests.json`, run in timed modules with a directions screen, module timer (hideable, low-time warning, auto-advance), mark for review, answer eliminator (ABC), math reference sheet, a "Check Your Work" page at the end of each module, no returning to finished modules, and a 10-minute break between SAT/PSAT sections. Results show a raw score report by section and module, not a scaled score. Current forms: SAT, PSAT/NMSQT, PSAT 8/9, and one short-form Section I test for each AP course with questions. They are shorter than real tests (the bank is small) but keep real per-question pacing.
 - **Solo study**: Quick Practice (5/10/20, optional timer, instant or end-of-session feedback), Focus Mode (one skill, hints), Timed Challenge (score + personal bests), Review (incorrect, marked, saved, due), a shared Daily Challenge, and section-based Exam Simulation (clearly labeled as unofficial).
 - **Exam engine**: passages, tables, charts, images, KaTeX math, multiple choice, multi-select, and student-produced numeric answers; navigator, mark for review, answer elimination, keyboard shortcuts, hide-able countdown with low-time warning and auto-submit, refresh-safe drafts, confirmation before submit, and a results page with explanations, topic breakdown, XP, and a recommended next session.
 - **Original question bank**: 93 questions with explanations across SAT Reading and Writing (15), SAT Math (18), AP Statistics (10), AP Environmental Science (10), APUSH (10), AP English Language (9), plus starter sets for AP CSP (6), Biology (5), Chemistry (5), and Physics 1 (5). PSAT tracks reuse the SAT pool at easier difficulty levels. Coverage is labeled in the app.
@@ -123,9 +125,9 @@ See [docs/CONTENT.md](docs/CONTENT.md) to add questions or exams.
 
 Run in this repository's development environment (local Supabase via the Supabase CLI):
 
-- `npm test`: 69 unit tests.
+- `npm test`: 74 unit tests.
 - `npm run test:db`: 6 authorization and friends/leaderboard tests against local Supabase.
-- `npm run test:e2e`: 8 demo-mode tests (desktop and mobile), plus 3 connected-mode tests covering persistence across sign-in, idempotent resubmission, and a two-browser live match with duplicate-answer rejection.
+- `npm run test:e2e`: 11 demo-mode tests (desktop and mobile, including course search and full SAT and AP practice tests), plus 4 connected-mode tests covering persistence across sign-in, idempotent resubmission, a two-browser live match with duplicate-answer rejection, and a practice test with server-side draft autosave.
 - `npm run build`, `npm run lint` (0 errors), `npm run typecheck`.
 
 ## Known limitations
@@ -135,5 +137,8 @@ Run in this repository's development environment (local Supabase via the Supabas
 - Practice answer keys ship to the browser so demo mode can grade offline. Server grading and XP rules prevent leaderboard inflation, but a determined student could look up answers in the bundle. For high-stakes competition, serve multiplayer questions only from the database and remove the bundle from the client.
 - Per-instance rate limiting is best effort on serverless; durable limits cover the abuse-prone actions.
 - Email or push study reminders are not implemented (the settings page says so).
+- Practice tests are short-form (one form per course) because the bank is small. SAT/PSAT modules are fixed, not adaptive, and there is no scaled score. Bluebook's highlighter/notes tool and built-in graphing calculator are not replicated.
+- Per-module timers and module locks are enforced in the browser; the server enforces the overall test deadline and grades late submissions from the last saved draft.
+- Official College Board links in `src/lib/content/course-directory.ts` follow College Board's URL patterns but could not be checked from the build environment (its network blocks collegeboard.org). Click through them once after deploying.
 - Progress made in demo mode or while signed out stays on that device and isn't imported when you create an account (guest accounts that upgrade keep their progress).
 - The privacy policy and terms are templates and have not been legally reviewed.

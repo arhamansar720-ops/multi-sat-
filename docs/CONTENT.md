@@ -45,3 +45,11 @@ Text is rendered as escaped React text, and KaTeX runs with `trust: false`, so c
 - Every question needs plausible distractors and an explanation that matches the keyed answer.
 - Spread correct answers across choice letters.
 - Don't pad the bank with near-duplicates.
+
+## Practice test forms
+
+`content/tests/practice-tests.json` defines fixed tests. Each test has a `track`, a `title`, a `description`, `modules` (each with `id`, `title`, `section`, `minutes`, and ordered `questionIds` from that track's pool), and `breakAfter` (module indexes followed by a 10-minute break). Keep questions that share a passage together and in order. Unit tests check that every id exists, belongs to the test's track, and appears once.
+
+## Course directory
+
+`src/lib/content/course-directory.ts` lists every course in the search tool, including courses without StudyDuel questions. Set `track` to connect a course to a study track. Official links point to College Board's own pages; keep all external URLs in that file.

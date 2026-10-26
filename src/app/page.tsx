@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trackCounts } from "@/lib/content/bank";
 import { TRACKS } from "@/lib/content/catalog";
+import { directoryCourseForTrack } from "@/lib/content/course-directory";
+import { testsForTrack } from "@/lib/content/tests";
 import { PRODUCT } from "@/lib/config";
 
 export default function LandingPage() {
@@ -49,20 +51,22 @@ export default function LandingPage() {
                 <h2 id="exams-heading" className="text-2xl font-semibold tracking-tight">Pick your exam</h2>
                 <p className="text-muted-foreground">Coverage is listed honestly. Starter sets are small and growing.</p>
               </div>
-              <Link href="/study" className="text-sm font-medium text-primary hover:underline">
-                Browse all exams →
+              <Link href="/courses" className="text-sm font-medium text-primary hover:underline">
+                Search all SAT and AP courses →
               </Link>
             </div>
             <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {TRACKS.map((t) => (
                 <li key={t.slug}>
-                  <Link href={`/study/${t.slug}`} className="group flex h-full flex-col gap-2 rounded-2xl border bg-card p-4 shadow-card transition-colors hover:border-primary/40">
+                  <Link href={`/courses/${directoryCourseForTrack(t.slug)?.slug ?? t.slug}`} className="group flex h-full flex-col gap-2 rounded-2xl border bg-card p-4 shadow-card transition-colors hover:border-primary/40">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-medium text-muted-foreground">{t.program}</span>
                       <Badge variant={t.coverage === "core" ? "success" : "outline"}>{t.coverage === "core" ? "Core set" : "Starter set"}</Badge>
                     </div>
                     <p className="font-semibold leading-snug group-hover:text-primary">{t.name}</p>
-                    <p className="mt-auto text-xs text-muted-foreground">{counts[t.slug]?.total ?? 0} questions</p>
+                    <p className="mt-auto text-xs text-muted-foreground">
+                      {testsForTrack(t.slug).length} practice test{testsForTrack(t.slug).length === 1 ? "" : "s"} · {counts[t.slug]?.total ?? 0} questions
+                    </p>
                   </Link>
                 </li>
               ))}
@@ -75,8 +79,8 @@ export default function LandingPage() {
           <h2 id="how-heading" className="text-2xl font-semibold tracking-tight">How it works</h2>
           <ol className="grid gap-4 md:grid-cols-3">
             {[
-              { icon: BookOpen, title: "Choose an exam and skill", body: "Pick the SAT, PSAT, or an AP course, then narrow to a section, topic, or single skill." },
-              { icon: Timer, title: "Practice in a focused interface", body: "Navigate, flag, eliminate choices, and use an optional timer, then review every explanation." },
+              { icon: BookOpen, title: "Choose an exam and skill", body: "Search every SAT Suite and AP course, then take a full practice test or narrow to a section, topic, or single skill." },
+              { icon: Timer, title: "Test in a familiar format", body: "Practice tests run in timed modules with the tools you know from digital testing: mark for review, answer eliminator, reference sheet, and a break between sections." },
               { icon: BarChart3, title: "Follow the recommendations", body: "Mastery is tracked per skill from your real answers, and we suggest what to practice next." },
             ].map((s, i) => (
               <li key={s.title} className="rounded-2xl border bg-card p-6 shadow-card">

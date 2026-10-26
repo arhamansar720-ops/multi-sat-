@@ -2,7 +2,7 @@ import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { getTrack } from "@/lib/content/catalog";
 import { randomId } from "@/lib/content/random";
 import { finalizeSession, isLate, rewardContextFromHistory } from "@/lib/engine/finalize";
-import { deadlineFor, selectQuestions, sessionTitle } from "@/lib/engine/selection";
+import { deadlineFor, normalizeConfig, selectQuestions, sessionTitle } from "@/lib/engine/selection";
 import {
   DEFAULT_PREFERENCES,
   sessionConfigSchema,
@@ -53,7 +53,7 @@ function toSession(row: SessionRow): PracticeSession {
 }
 
 export async function createSessionForUser(admin: SupabaseClient, user: User, rawConfig: unknown): Promise<PracticeSession> {
-  const config = sessionConfigSchema.parse(rawConfig);
+  const config = normalizeConfig(sessionConfigSchema.parse(rawConfig));
   if (!getTrack(config.track)) throw new ApiError(400, "unknown_track", "That exam or course does not exist.");
   await ensureQuestionBank(admin);
 

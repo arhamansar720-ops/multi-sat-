@@ -16,6 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState, Notice } from "@/components/ui/states";
 import { getQuestion } from "@/lib/content/bank";
+import { getPracticeTest } from "@/lib/content/tests";
 import { AppError } from "@/lib/data/repository";
 import { MODE_LABELS, type SessionResult } from "@/lib/engine/types";
 import { attemptsFromResults, computeSkillMastery } from "@/lib/progression/mastery";
@@ -108,15 +109,17 @@ function ResultsView({ result, totalXp }: { result: SessionResult; totalXp: numb
         }
         title={result.title}
         description={
-          result.config.mode === "simulation"
-            ? "Independent practice simulation. This report shows your raw practice results and is not an official or predicted score."
+          result.config.mode === "simulation" || result.config.mode === "test"
+            ? "Independent practice test with original questions. This report shows your raw practice results and is not an official or predicted score."
             : "Practice results. Short quizzes do not produce an official or predicted exam score."
         }
         actions={
           <>
-            <Button variant="outline" onClick={() => start({ ...result.config, questionIds: undefined })} disabled={starting || result.config.mode === "review" || result.config.mode === "daily"}>
-              <RotateCcw /> Similar session
-            </Button>
+            {result.config.mode !== "test" && (
+              <Button variant="outline" onClick={() => start({ ...result.config, questionIds: undefined })} disabled={starting || result.config.mode === "review" || result.config.mode === "daily"}>
+                <RotateCcw /> Similar session
+              </Button>
+            )}
             <Button asChild>
               <Link href="/dashboard">Dashboard</Link>
             </Button>
@@ -157,6 +160,7 @@ function ResultsView({ result, totalXp }: { result: SessionResult; totalXp: numb
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
+            {result.config.mode === "test" && <TestScoreReport result={result} />}
             {result.config.mode === "simulation" && sections.length > 0 && (
               <Card>
                 <CardHeader>
@@ -240,6 +244,43 @@ function ResultsView({ result, totalXp }: { result: SessionResult; totalXp: numb
         </div>
       </div>
     </>
+  );
+}
+
+/** Raw score by section and module. No scaled or predicted score is computed. */
+function TestScoreReport({ result }: { result: SessionResult }) {
+  const test = getPracticeTest(result.config.testId);
+  if (!test) return null;
+  const byId = new Map(result.items.map((i) => [i.questionId, i]));
+  const sections = [...new Set(test.modules.map((m) => m.section))].map((section) => {
+    const modules = test.modules
+      .filter((m) => m.section === section)
+      .map((m) => ({ title: m.title, total: m.questionIds.length, correct: m.questionIds.filter((id) => byId.get(id)?.correct).length }));
+    return { section, modules, correct: modules.reduce((s, m) => s + m.correct, 0), total: modules.reduce((s, m) => s + m.total, 0) };
+  });
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Score report</CardTitle>
+        <CardDescription>
+          Questions answered correctly in each section and module. StudyDuel doesn&apos;t convert these to a scaled or predicted score, because a short practice test with original questions can&apos;t support one.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {sections.map((s) => (
+          <div key={s.section} className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <p className="font-semibold">{s.section}</p>
+              <p className="text-2xl font-semibold tabular-nums">
+                {s.correct}
+                <span className="text-base font-normal text-muted-foreground"> / {s.total}</span>
+              </p>
+            </div>
+            {s.modules.length > 1 && s.modules.map((m) => <BreakdownRow key={m.title} label={m.title} correct={m.correct} total={m.total} />)}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   );
 }
 

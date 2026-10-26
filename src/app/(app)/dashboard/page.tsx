@@ -112,7 +112,7 @@ export default function DashboardPage() {
         <ActionCard href="/play" icon={Swords} title="Play with friends" body={config.mode === "connected" ? "Create a room or join with a code." : "Try a local demo match against practice bots."} tone="violet" />
         <ActionCard href="/study/sat" icon={GraduationCap} title="SAT practice" body="Reading and Writing plus Math." />
         <ActionCard href="/study/psat-nmsqt" icon={BookOpen} title="PSAT practice" body="Easy and medium SAT Suite questions." />
-        <ActionCard href="/study#exams-heading" icon={GraduationCap} title="AP courses" body="Stats, APES, APUSH, Lang, and starter sets." />
+        <ActionCard href="/courses" icon={GraduationCap} title="Find a course" body="Search every SAT and AP course, with practice tests and official links." />
         <ActionCard href="/review" icon={RotateCcw} title="Review incorrect answers" body={reviewCount ? `${reviewCount} question${reviewCount === 1 ? "" : "s"} to revisit.` : "Nothing to review yet."} />
         <ActionCard
           onClick={() => start({ mode: "daily", track: "sat", difficulty: "mixed", count: DAILY_CHALLENGE_SIZE, timeLimitSec: null, feedback: "end", hints: false })}

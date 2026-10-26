@@ -13,6 +13,10 @@ export default function HelpPage() {
       <p>
         In demo mode, or when you aren&apos;t signed in, progress is saved in this browser only. When you sign in (or continue as a guest on a connected deployment), it&apos;s saved to your account. The banner at the top of the app always tells you which.
       </p>
+      <h2>How do practice tests work?</h2>
+      <p>
+        Find your course on the <Link href="/courses" className="text-primary underline">Courses</Link> page and start a practice test. Tests run in timed modules like the digital SAT and AP exams: each module has its own timer, you can move freely and mark questions within a module, you get a Check Your Work page at the end, and you can&apos;t go back once a module ends. SAT and PSAT tests include a 10-minute break between sections. StudyDuel tests use original questions and report raw scores only. For College Board&apos;s official practice tests and released exam questions, use the links on each course page.
+      </p>
       <h2>How do study modes work?</h2>
       <ul>
         <li><strong>Quick Practice</strong>: 5, 10, or 20 questions with optional timer and feedback after each question or at the end.</li>

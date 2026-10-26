@@ -18,6 +18,7 @@ import { AppError, emptyDraft, type LoadedSession } from "@/lib/data/repository"
 import { MODE_LABELS, type SessionDraft } from "@/lib/engine/types";
 import { cn, formatClock } from "@/lib/utils";
 import { RichText } from "./rich-text";
+import { useDraftAutosave } from "./use-draft-autosave";
 import { QuestionView } from "./question-view";
 
 const LOW_TIME_MS = 60_000;
@@ -74,27 +75,7 @@ export function ExamRunner({ loaded }: { loaded: LoadedSession }) {
     return () => window.clearInterval(t);
   }, [clockOffsetMs, questions]);
 
-  // Persist the draft (localStorage immediately in local mode; debounced server save in connected mode).
-  const saveTimer = React.useRef<number | null>(null);
-  const lastSavedAnswers = React.useRef<string>("");
-  React.useEffect(() => {
-    if (submittedRef.current) return;
-    const snapshot = JSON.stringify({ a: draft.answers, f: draft.flagged, c: draft.checked, i: draft.currentIndex, e: draft.eliminated });
-    const significant = snapshot !== lastSavedAnswers.current;
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(
-      () => {
-        lastSavedAnswers.current = snapshot;
-        repo.saveDraft(session.id, { ...draftRef.current, updatedAt: new Date().toISOString() }).catch(() => {
-          /* Draft also lives locally; the next save retries. */
-        });
-      },
-      repo.kind === "local" ? 300 : significant ? 1200 : 15000,
-    );
-    return () => {
-      if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    };
-  }, [draft, repo, session.id]);
+  useDraftAutosave(repo, session.id, draft, submitting);
 
   const submit = React.useCallback(
     async (reason: "manual" | "timeout") => {

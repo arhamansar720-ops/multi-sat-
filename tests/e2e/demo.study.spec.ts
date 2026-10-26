@@ -32,7 +32,7 @@ test.describe("demo mode solo study", () => {
 
   test("TEST 3: AP Environmental Science subject quiz", async ({ page }) => {
     await page.goto("/study");
-    await page.getByRole("listitem").filter({ hasText: "AP Environmental Science" }).getByRole("link", { name: "Practice" }).click();
+    await page.locator('section[aria-labelledby="exams-heading"] li').filter({ hasText: "AP Environmental Science" }).getByRole("link", { name: "Practice", exact: true }).click();
     await expect(page.getByRole("heading", { name: "AP Environmental Science" })).toBeVisible();
     await page.getByRole("radio", { name: "5", exact: true }).click();
     await page.getByRole("button", { name: "Start session" }).click();

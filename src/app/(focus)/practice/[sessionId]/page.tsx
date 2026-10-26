@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import * as React from "react";
 import { ExamRunner } from "@/components/exam/exam-runner";
+import { TestRunner } from "@/components/exam/test-runner";
 import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { EmptyState, ErrorState } from "@/components/ui/states";
@@ -35,7 +36,9 @@ export default function PracticePage() {
     if (authReady) void load();
   }, [authReady, load]);
 
-  if (state.status === "ready") return <ExamRunner loaded={state.loaded} />;
+  if (state.status === "ready") {
+    return state.loaded.session.config.mode === "test" ? <TestRunner loaded={state.loaded} /> : <ExamRunner loaded={state.loaded} />;
+  }
   return (
     <main id="main" className="mx-auto flex min-h-dvh max-w-lg items-center px-4">
       {state.status === "loading" && (

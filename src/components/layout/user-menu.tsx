@@ -1,6 +1,6 @@
 "use client";
 
-import { LogIn, LogOut, Settings, Trophy, User, Users } from "lucide-react";
+import { LogIn, LogOut, RotateCcw, Settings, Trophy, User, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,6 +29,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild><Link href="/profile"><User /> Profile & goals</Link></DropdownMenuItem>
         <DropdownMenuItem asChild><Link href="/settings"><Settings /> Settings</Link></DropdownMenuItem>
+        <DropdownMenuItem asChild className="md:hidden"><Link href="/review"><RotateCcw /> Review</Link></DropdownMenuItem>
         <DropdownMenuItem asChild className="md:hidden"><Link href="/leaderboard"><Trophy /> Leaderboard</Link></DropdownMenuItem>
         <DropdownMenuItem asChild className="md:hidden"><Link href="/friends"><Users /> Friends</Link></DropdownMenuItem>
         {config.mode === "connected" && (

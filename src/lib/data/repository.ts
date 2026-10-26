@@ -3,7 +3,7 @@
 import { getTrack } from "@/lib/content/catalog";
 import { randomId } from "@/lib/content/random";
 import { finalizeSession, rewardContextFromHistory } from "@/lib/engine/finalize";
-import { deadlineFor, selectQuestions, sessionTitle } from "@/lib/engine/selection";
+import { deadlineFor, normalizeConfig, selectQuestions, sessionTitle } from "@/lib/engine/selection";
 import {
   sessionConfigSchema,
   type MatchSummary,
@@ -83,7 +83,7 @@ export function achievementsAfter(activity: UserActivity, now = new Date()): str
 export const localRepository: StudyRepository = {
   kind: "local",
   async createSession(raw) {
-    const config = sessionConfigSchema.parse(raw);
+    const config = normalizeConfig(sessionConfigSchema.parse(raw));
     if (!getTrack(config.track)) throw new AppError("That exam or course does not exist.");
     const id = randomId();
     const now = new Date();

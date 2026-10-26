@@ -1,5 +1,6 @@
 import { getQuestion, poolForTrack, QUESTIONS } from "@/lib/content/bank";
 import { getTrack } from "@/lib/content/catalog";
+import { getPracticeTest, testQuestionIds, testTotalSeconds } from "@/lib/content/tests";
 import { seededRandom, shuffle } from "@/lib/content/random";
 import type { Question } from "@/lib/content/types";
 import { DIFFICULTY_ORDER, MODE_LABELS, type SessionConfig } from "./types";
@@ -43,6 +44,11 @@ export function selectQuestions(config: SessionConfig, seed: string, now = new D
   if (config.mode === "daily") {
     const dailyKey = dailyKeyFor(now);
     return { questionIds: dailyChallengeIds(dailyKey), dailyKey };
+  }
+
+  if (config.mode === "test") {
+    const test = getPracticeTest(config.testId);
+    return { questionIds: test && test.track === config.track ? testQuestionIds(test) : [] };
   }
 
   if (config.mode === "review") {
@@ -91,6 +97,7 @@ export function sessionTitle(config: SessionConfig): string {
   const track = getTrack(config.track);
   if (config.mode === "daily") return "Daily Challenge";
   if (config.mode === "review") return "Review session";
+  if (config.mode === "test") return getPracticeTest(config.testId)?.title ?? "Practice Test";
   const focus = config.skills?.length === 1 ? config.skills[0] : config.topics?.length === 1 ? config.topics[0] : config.sections?.length === 1 ? config.sections[0] : null;
   const base = `${MODE_LABELS[config.mode]} · ${track?.shortName ?? config.track}`;
   return focus ? `${base} · ${focus}` : base;
@@ -104,4 +111,30 @@ export function suggestedTimeLimit(questionIds: string[], factor = 1): number {
 
 export function deadlineFor(startedAt: Date, timeLimitSec: number | null): string | null {
   return timeLimitSec ? new Date(startedAt.getTime() + timeLimitSec * 1000).toISOString() : null;
+}
+
+/** Extra time on a practice test's outer deadline for directions screens and page loads. */
+export const TEST_DEADLINE_SLACK_SEC = 5 * 60;
+
+/**
+ * Server-authoritative adjustments to a requested config. Practice tests always
+ * use the form's own timing and feedback rules, whatever the client asked for.
+ */
+export function normalizeConfig(config: SessionConfig): SessionConfig {
+  if (config.mode !== "test") return config;
+  const test = getPracticeTest(config.testId);
+  if (!test) return config;
+  return {
+    ...config,
+    track: test.track,
+    count: testQuestionIds(test).length,
+    difficulty: "mixed",
+    sections: undefined,
+    topics: undefined,
+    skills: undefined,
+    questionIds: undefined,
+    feedback: "end",
+    hints: false,
+    timeLimitSec: testTotalSeconds(test) + TEST_DEADLINE_SLACK_SEC,
+  };
 }
