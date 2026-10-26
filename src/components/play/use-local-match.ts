@@ -50,6 +50,7 @@ function planBots(state: Internal, now: number): Record<string, number> {
 
 export function useLocalMatch(settings: RoomSettings, playerName: string, botCount: number) {
   const meId = "local-you";
+  const scoring = settings.scoring;
   const [state, setState] = React.useState<Internal | null>(null);
 
   const start = React.useCallback(() => {
@@ -74,40 +75,43 @@ export function useLocalMatch(settings: RoomSettings, playerName: string, botCou
     });
   }, [settings, playerName, botCount]);
 
-  // Game loop.
+  // Game loop: one stable interval per match; the updater returns the same object when nothing changes.
+  const matchId = state?.id ?? null;
+  const finished = state?.clock.phase === "finished";
   React.useEffect(() => {
-    if (!state || state.clock.phase === "finished") return;
+    if (!matchId || finished) return;
     const t = window.setInterval(() => {
       setState((s) => {
-        if (!s) return s;
+        if (!s || s.id !== matchId) return s;
         const now = Date.now();
-        let next = { ...s, answers: { ...s.answers } };
-        if (next.clock.phase === "question") {
-          const q = next.questions[next.clock.index]!;
-          const rand = seededRandom(`${next.id}:${next.clock.index}:answers`);
-          for (const p of next.players.filter((pl) => pl.bot)) {
-            const at = next.botPlan[p.id] ?? Infinity;
+        let changed = false;
+        let answers = s.answers;
+        if (s.clock.phase === "question") {
+          const q = s.questions[s.clock.index]!;
+          const rand = seededRandom(`${s.id}:${s.clock.index}:answers`);
+          for (const p of s.players.filter((pl) => pl.bot)) {
             const roll = rand();
-            if (now >= at && !next.answers[p.id]?.[next.clock.index]) {
+            const at = s.botPlan[p.id] ?? Infinity;
+            if (now >= at && !answers[p.id]?.[s.clock.index]) {
               const correct = roll < Math.min(0.95, HIT_RATE[q.difficulty] * p.skill);
-              const wrong = q.type === "numeric" ? ["0"] : [q.choices!.find((c) => !q.correct.includes(c.id))!.id];
-              const response = correct ? (q.type === "numeric" ? [q.correct[0]!] : q.correct) : wrong;
-              const ms = at - next.clock.phaseStartedAt;
-              next.answers[p.id] = { ...next.answers[p.id], [next.clock.index]: { response, correct, ms, points: pointsFor(correct, ms, next.clock.secondsPerQuestion * 1000, settings.scoring) } };
+              const wrongChoice = q.choices?.find((c) => !q.correct.includes(c.id))?.id ?? "A";
+              const response = correct ? (q.type === "numeric" ? [q.correct[0]!] : q.correct) : q.type === "numeric" ? ["0"] : [wrongChoice];
+              const ms = at - s.clock.phaseStartedAt;
+              answers = { ...answers, [p.id]: { ...answers[p.id], [s.clock.index]: { response, correct, ms, points: pointsFor(correct, ms, s.clock.secondsPerQuestion * 1000, scoring) } } };
+              changed = true;
             }
           }
         }
-        const allAnswered = next.players.every((p) => next.answers[p.id]?.[next.clock.index]);
-        const clock = nextClock(next.clock, allAnswered, now);
-        if (clock) {
-          next = { ...next, clock };
-          if (clock.phase === "question") next.botPlan = planBots(next, now);
-        }
+        const allAnswered = s.players.every((p) => answers[p.id]?.[s.clock.index]);
+        const clock = nextClock(s.clock, allAnswered, now);
+        if (!clock && !changed) return s;
+        const next: Internal = { ...s, answers, clock: clock ?? s.clock };
+        if (clock?.phase === "question") next.botPlan = planBots(next, now);
         return next;
       });
     }, 200);
     return () => window.clearInterval(t);
-  }, [state, settings.scoring]);
+  }, [matchId, finished, scoring]);
 
   // Record finished match locally (once).
   React.useEffect(() => {

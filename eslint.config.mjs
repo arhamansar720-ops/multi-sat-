@@ -12,7 +12,7 @@ const config = [
     },
   },
   {
-    ignores: [".next/**", "node_modules/**", "playwright-report/**", "test-results/**", "next-env.d.ts", "supabase/**"],
+    ignores: [".next/**", ".next-demo/**", "node_modules/**", "playwright-report/**", "test-results/**", "next-env.d.ts", "supabase/**"],
   },
 ];
 
