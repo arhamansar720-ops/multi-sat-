@@ -1,22 +1,23 @@
 "use client";
 
-import type { SupabaseClient } from "@supabase/supabase-js";
 import * as React from "react";
-import { getPublicConfig, type PublicConfigStatus } from "@/lib/config";
+import type { PublicConfigStatus } from "@/lib/config";
 import { localStore } from "@/lib/data/local-store";
-import { AppError, localRepository, remoteRepository, type StudyRepository } from "@/lib/data/repository";
+import { api, AppError, localRepository, remoteRepository, type StudyRepository } from "@/lib/data/repository";
 import type { UserActivity } from "@/lib/engine/types";
-import { getBrowserSupabase } from "@/lib/supabase/browser";
 
 export interface AppUser {
   id: string;
   email: string | null;
   isGuest: boolean;
+  displayName: string;
+  username: string | null;
 }
 
 interface AppContextValue {
   config: PublicConfigStatus;
-  supabase: SupabaseClient | null;
+  /** True when this deployment has a database (accounts, sync, multiplayer). */
+  online: boolean;
   /** True once we know whether someone is signed in. */
   authReady: boolean;
   user: AppUser | null;
@@ -27,19 +28,20 @@ interface AppContextValue {
   activityLoading: boolean;
   activityError: string | null;
   refreshActivity: () => Promise<void>;
+  /** Re-reads the signed-in user after sign-in, sign-up, or other auth changes. */
+  refreshUser: () => Promise<AppUser | null>;
   continueAsGuest: (displayName?: string) => Promise<void>;
   signOut: () => Promise<void>;
   storageAvailable: boolean;
-  /** True when Supabase is configured but couldn't be reached. */
+  /** True when the backend is configured but couldn't be reached. */
   backendUnreachable: boolean;
 }
 
 const AppContext = React.createContext<AppContextValue | null>(null);
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
-  const config = React.useMemo(() => getPublicConfig(), []);
-  const supabase = React.useMemo(() => getBrowserSupabase(), []);
-  const [authReady, setAuthReady] = React.useState(!supabase);
+export function AppProvider({ config, children }: { config: PublicConfigStatus; children: React.ReactNode }) {
+  const online = config.mode === "connected";
+  const [authReady, setAuthReady] = React.useState(!online);
   const [user, setUser] = React.useState<AppUser | null>(null);
   const [activity, setActivity] = React.useState<UserActivity | null>(null);
   const [activityLoading, setActivityLoading] = React.useState(true);
@@ -47,39 +49,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [storageAvailable, setStorageAvailable] = React.useState(true);
   const [backendUnreachable, setBackendUnreachable] = React.useState(false);
 
+  const refreshUser = React.useCallback(async () => {
+    if (!online) return null;
+    try {
+      const { user: next } = await api<{ user: AppUser | null }>("/api/auth/session");
+      setUser(next);
+      setBackendUnreachable(false);
+      return next;
+    } catch (err) {
+      // Server or database unreachable: keep working locally.
+      setBackendUnreachable(!(err instanceof AppError) || err.code === "network" || err.status >= 500);
+      setUser(null);
+      return null;
+    } finally {
+      setAuthReady(true);
+    }
+  }, [online]);
+
   React.useEffect(() => {
     setStorageAvailable(localStore.storageAvailable());
-    if (!supabase) return;
-    let cancelled = false;
-    supabase.auth
-      .getUser()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        setBackendUnreachable(Boolean(error && (error.name === "AuthRetryableFetchError" || /fetch|network/i.test(error.message))));
-        const u = data.user;
-        setUser(u ? { id: u.id, email: u.email ?? null, isGuest: Boolean(u.is_anonymous) } : null);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setUser(null);
-          setBackendUnreachable(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setAuthReady(true);
-      });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      const u = session?.user;
-      setUser(u ? { id: u.id, email: u.email ?? null, isGuest: Boolean(u.is_anonymous) } : null);
-      setAuthReady(true);
-    });
-    return () => {
-      cancelled = true;
-      sub.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    void refreshUser();
+  }, [refreshUser]);
 
-  const repo = user && supabase ? remoteRepository : localRepository;
+  const repo = user && online ? remoteRepository : localRepository;
   const dataScope = repo.kind === "remote" ? "account" : "device";
 
   const refreshActivity = React.useCallback(async () => {
@@ -102,33 +94,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const continueAsGuest = React.useCallback(
     async (displayName?: string) => {
-      if (!supabase) throw new AppError("Online play isn't configured on this deployment.");
-      const { data: existing } = await supabase.auth.getUser();
-      if (existing.user) return;
-      const { error } = await supabase.auth.signInAnonymously({ options: { data: displayName ? { display_name: displayName } : {} } });
-      if (error) {
-        if (error.name === "AuthRetryableFetchError" || /fetch|network/i.test(error.message)) {
+      if (!online) throw new AppError("Online play isn't configured on this deployment.");
+      if (user) return;
+      try {
+        await api("/api/auth/guest", { method: "POST", json: displayName ? { displayName } : {} });
+      } catch (err) {
+        if (err instanceof AppError && (err.code === "network" || err.status >= 500)) {
           setBackendUnreachable(true);
           throw new AppError("Online services are temporarily unavailable. Solo practice still works and saves on this device.", "network");
         }
-        throw new AppError(
-          /anonymous/i.test(error.message)
-            ? "Guest play is turned off on this server. Create a free account to play online."
-            : error.message,
-        );
+        throw err;
       }
+      await refreshUser();
     },
-    [supabase],
+    [online, user, refreshUser],
   );
 
   const signOut = React.useCallback(async () => {
-    if (supabase) await supabase.auth.signOut();
+    if (online) await api("/api/auth/sign-out", { method: "POST" }).catch(() => {});
     setUser(null);
-  }, [supabase]);
+  }, [online]);
 
   const value: AppContextValue = {
     config,
-    supabase,
+    online,
     authReady,
     user,
     dataScope,
@@ -137,6 +126,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     activityLoading,
     activityError,
     refreshActivity,
+    refreshUser,
     continueAsGuest,
     signOut,
     storageAvailable,

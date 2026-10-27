@@ -23,7 +23,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
-  const { activity, repo, refreshActivity, config, user, supabase, signOut, dataScope } = useApp();
+  const { activity, repo, refreshActivity, config, user, online, signOut, dataScope } = useApp();
   const router = useRouter();
   const [confirmClear, setConfirmClear] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState(false);
@@ -55,15 +55,17 @@ export default function SettingsPage() {
 
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!online) return;
     if (password.length < 8) return toast.error("Use at least 8 characters.");
     setBusy("password");
-    const { error } = await supabase.auth.updateUser({ password });
-    setBusy(null);
-    if (error) toast.error(error.message);
-    else {
+    try {
+      await api("/api/auth/password", { method: "PUT", json: { password } });
       setPassword("");
-      toast.success("Password updated");
+      toast.success("Password updated. Other devices were signed out.");
+    } catch (err) {
+      toast.error(err instanceof AppError ? err.message : "Couldn't update your password.");
+    } finally {
+      setBusy(null);
     }
   };
 

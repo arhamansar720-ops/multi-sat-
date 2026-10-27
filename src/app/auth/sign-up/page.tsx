@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -10,10 +10,11 @@ import { useApp } from "@/components/providers/app-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api, AppError } from "@/lib/data/repository";
 import { displayNameSchema } from "@/lib/multiplayer/rules";
 
 function SignUpForm() {
-  const { supabase, user, refreshActivity } = useApp();
+  const { online, user, refreshUser } = useApp();
   const router = useRouter();
   const nextParam = useSearchParams().get("next");
   const next = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/onboarding";
@@ -22,63 +23,28 @@ function SignUpForm() {
   const [password, setPassword] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
-  const [sentTo, setSentTo] = React.useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!online) return;
     const parsedName = displayNameSchema.safeParse(name);
     if (!parsedName.success) return setError(parsedName.error.issues[0]?.message ?? "Choose a display name.");
     if (password.length < 8) return setError("Use a password with at least 8 characters.");
     setBusy(true);
     setError(null);
-    const redirect = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-    if (user?.isGuest) {
-      // Upgrade the guest account in place so existing progress is kept.
-      const { data, error } = await supabase.auth.updateUser({ email: email.trim(), password, data: { display_name: parsedName.data } }, { emailRedirectTo: redirect });
+    const wasGuest = Boolean(user?.isGuest);
+    try {
+      // A signed-in guest is upgraded in place, so existing progress is kept.
+      await api("/api/auth/sign-up", { method: "POST", json: { email: email.trim(), password, displayName: parsedName.data } });
+    } catch (err) {
       setBusy(false);
-      if (error) return setError(/registered|already/i.test(error.message) ? "An account with that email already exists. Try signing in." : error.message);
-      await fetch("/api/me/preferences", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName: parsedName.data }) });
-      if (data.user?.email === email.trim().toLowerCase()) {
-        toast.success("Account created. Your guest progress is saved.");
-        await refreshActivity();
-        router.push(next);
-      } else {
-        setSentTo(email.trim());
-      }
-      return;
+      return setError(err instanceof AppError ? err.message : "Couldn't create your account. Please try again.");
     }
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { data: { display_name: parsedName.data }, emailRedirectTo: redirect },
-    });
+    await refreshUser();
     setBusy(false);
-    if (error) return setError(/registered/i.test(error.message) ? "An account with that email already exists. Try signing in." : error.message);
-    if (data.session) {
-      toast.success("Account created");
-      await refreshActivity();
-      router.push(next);
-    } else {
-      setSentTo(email.trim());
-    }
+    toast.success(wasGuest ? "Account created. Your guest progress is saved." : "Account created");
+    router.push(next);
   };
-
-  if (sentTo) {
-    return (
-      <AuthCard title="Check your email">
-        <div className="space-y-4 text-center">
-          <MailCheck className="mx-auto size-10 text-primary" aria-hidden />
-          <p className="text-sm text-muted-foreground">
-            We sent a confirmation link to <strong className="text-foreground">{sentTo}</strong>. Open it on this device to finish setting up your account.
-          </p>
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/dashboard">Keep practicing meanwhile</Link>
-          </Button>
-        </div>
-      </AuthCard>
-    );
-  }
 
   return (
     <AuthCard title={user?.isGuest ? "Save your guest progress" : "Create your account"} description="Free. We only ask for what we need to save your progress.">

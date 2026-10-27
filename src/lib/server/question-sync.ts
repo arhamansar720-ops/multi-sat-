@@ -1,9 +1,9 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PoolClient } from "pg";
 import { QUESTIONS } from "@/lib/content/bank";
 import { COURSES, TRACKS } from "@/lib/content/catalog";
 import { hashString } from "@/lib/content/random";
 import { ACHIEVEMENTS } from "@/lib/progression/achievements";
-import { ApiError } from "@/lib/supabase/server";
+import { json, maybeOne, tx } from "./db";
 
 export function bankVersion(): string {
   return hashString(JSON.stringify({ QUESTIONS, COURSES, TRACKS, ACHIEVEMENTS })).toString(36);
@@ -29,21 +29,40 @@ export function catalogRows() {
   };
 }
 
-export async function syncQuestionBank(admin: SupabaseClient): Promise<void> {
+type Row = Record<string, unknown>;
+/** Columns stored as jsonb; everything else is passed as-is (text[] arrays included). */
+const JSONB = new Set(["content", "correct"]);
+
+async function upsert(client: PoolClient, table: string, rows: Row[], key: string): Promise<void> {
+  if (!rows.length) return;
+  const cols = Object.keys(rows[0]!);
+  const params: unknown[] = [];
+  const values = rows.map(
+    (r) =>
+      `(${cols
+        .map((c) => {
+          params.push(JSONB.has(c) ? json(r[c]) : r[c]);
+          return `$${params.length}${JSONB.has(c) ? "::jsonb" : ""}`;
+        })
+        .join(", ")})`,
+  );
+  const updates = cols.filter((c) => c !== key).map((c) => `${c} = excluded.${c}`).join(", ");
+  await client.query(`insert into public.${table} (${cols.join(", ")}) values ${values.join(", ")} on conflict (${key}) do update set ${updates}`, params);
+}
+
+export async function syncQuestionBank(): Promise<void> {
   const rows = catalogRows();
-  const steps: [string, Record<string, unknown>[], string][] = [
-    ["exams", rows.exams, "id"],
-    ["courses", rows.courses, "id"],
-    ["questions", rows.questions, "id"],
-    ["question_keys", rows.keys, "question_id"],
-    ["achievements", rows.achievements, "id"],
-  ];
-  for (const [table, data, onConflict] of steps) {
-    const { error } = await admin.from(table).upsert(data, { onConflict });
-    if (error) throw new Error(`sync ${table}: ${error.message}`);
-  }
-  const { error } = await admin.from("app_meta").upsert({ key: "question_bank_version", value: bankVersion(), updated_at: new Date().toISOString() });
-  if (error) throw new Error(`sync app_meta: ${error.message}`);
+  await tx(async (client) => {
+    await upsert(client, "exams", rows.exams, "id");
+    await upsert(client, "courses", rows.courses, "id");
+    await upsert(client, "questions", rows.questions, "id");
+    await upsert(client, "question_keys", rows.keys, "question_id");
+    await upsert(client, "achievements", rows.achievements, "id");
+    await client.query(
+      "insert into public.app_meta (key, value) values ('question_bank_version', $1) on conflict (key) do update set value = excluded.value, updated_at = now()",
+      [bankVersion()],
+    );
+  });
 }
 
 let synced: Promise<void> | null = null;
@@ -51,19 +70,13 @@ let synced: Promise<void> | null = null;
 /**
  * Ensures the database has the bundled question bank (needed for foreign keys
  * on answers). Runs once per server instance and only writes when the bundled
- * content changed, so deployments work even if the seed step was skipped.
+ * content changed, so deployments work without a separate seed step.
  */
-export function ensureQuestionBank(admin: SupabaseClient): Promise<void> {
+export function ensureQuestionBank(): Promise<void> {
   if (!synced) {
     synced = (async () => {
-      const { data, error } = await admin.from("app_meta").select("value").eq("key", "question_bank_version").maybeSingle();
-      if (error) {
-        if (/relation .* does not exist|schema cache/i.test(error.message)) {
-          throw new ApiError(503, "schema_missing", "Database tables are missing. Run the SQL migrations in supabase/migrations first.");
-        }
-        throw new Error(error.message);
-      }
-      if (data?.value !== bankVersion()) await syncQuestionBank(admin);
+      const row = await maybeOne<{ value: string }>("select value from public.app_meta where key = 'question_bank_version'");
+      if (row?.value !== bankVersion()) await syncQuestionBank();
     })().catch((err) => {
       synced = null;
       throw err;

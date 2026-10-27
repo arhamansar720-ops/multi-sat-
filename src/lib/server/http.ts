@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import pg from "pg";
 import { ZodError } from "zod";
-import { ApiError } from "@/lib/supabase/server";
+import { ApiError } from "./errors";
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(data, { ...init, headers: { "Cache-Control": "no-store", ...(init?.headers ?? {}) } });
@@ -21,10 +22,19 @@ export function route<A extends unknown[]>(handler: (...args: A) => Promise<Resp
         return fail(400, "invalid_input", err.issues[0]?.message ?? "The request was not valid.");
       }
       if (err instanceof SyntaxError) return fail(400, "invalid_json", "The request body must be valid JSON.");
+      if (isDatabaseError(err)) {
+        console.error("[db] query failed", err);
+        return fail(502, "database_error", "The database is temporarily unavailable. Please try again.");
+      }
       console.error("[api] unexpected error", err);
       return fail(500, "internal", "Something went wrong on our side. Please try again.");
     }
   };
+}
+
+/** Best-effort client IP for rate limiting (Vercel and Render set x-forwarded-for). */
+export function clientIp(request: Request): string {
+  return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 }
 
 export async function readJson(request: Request): Promise<unknown> {
@@ -51,7 +61,9 @@ export function rateLimit(key: string, limit: number, windowMs: number): void {
   if (bucket.count > limit) throw new ApiError(429, "rate_limited", "Too many requests. Please slow down and try again shortly.");
 }
 
-export function dbError(error: { message: string; code?: string } | null, context: string): never {
-  console.error(`[db] ${context}`, error);
-  throw new ApiError(502, "database_error", "The database is temporarily unavailable. Please try again.");
+/** Postgres errors and network failures reaching it. */
+function isDatabaseError(err: unknown): boolean {
+  if (err instanceof pg.DatabaseError) return true;
+  const code = (err as { code?: unknown } | null)?.code;
+  return typeof code === "string" && /^(ECONNREFUSED|ECONNRESET|ETIMEDOUT|ENOTFOUND|EAI_AGAIN|EPIPE)$/.test(code);
 }

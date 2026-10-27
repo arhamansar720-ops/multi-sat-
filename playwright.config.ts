@@ -3,8 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * Two suites:
  * - demo: builds and serves the app in demo mode (no backend) on port 3100.
- * - connected: runs against an already-running app connected to Supabase
- *   (set E2E_CONNECTED_URL, e.g. http://localhost:3000 after `supabase start`).
+ * - connected: runs against an already-running app connected to Postgres
+ *   (set E2E_CONNECTED_URL, e.g. http://localhost:3000 with DATABASE_URL set).
  */
 const connectedUrl = process.env.E2E_CONNECTED_URL;
 

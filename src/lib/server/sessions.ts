@@ -1,4 +1,3 @@
-import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { getTrack } from "@/lib/content/catalog";
 import { randomId } from "@/lib/content/random";
 import { finalizeSession, isLate, rewardContextFromHistory } from "@/lib/engine/finalize";
@@ -20,8 +19,9 @@ import { newAchievements } from "@/lib/progression/achievements";
 import { localDateKey, safeTimeZone } from "@/lib/progression/dates";
 import { computeProgress } from "@/lib/progression/stats";
 import { XP_RULES } from "@/lib/progression/xp";
-import { ApiError } from "@/lib/supabase/server";
-import { dbError } from "./http";
+import type { AuthUser } from "./auth";
+import { json, maybeOne, query } from "./db";
+import { ApiError } from "./errors";
 import { ensureQuestionBank } from "./question-sync";
 
 interface SessionRow {
@@ -39,6 +39,18 @@ interface SessionRow {
   result: SessionResult | null;
 }
 
+interface MatchRow {
+  match_id: string;
+  score: number;
+  correct: number;
+  rank: number;
+  xp_awarded: number;
+  finished_at: string;
+  question_count: number;
+  human_players: number;
+  room_code: string | null;
+}
+
 function toSession(row: SessionRow): PracticeSession {
   return {
     id: row.id,
@@ -52,132 +64,115 @@ function toSession(row: SessionRow): PracticeSession {
   };
 }
 
-export async function createSessionForUser(admin: SupabaseClient, user: User, rawConfig: unknown): Promise<PracticeSession> {
+export async function createSessionForUser(user: AuthUser, rawConfig: unknown): Promise<PracticeSession> {
   const config = normalizeConfig(sessionConfigSchema.parse(rawConfig));
   if (!getTrack(config.track)) throw new ApiError(400, "unknown_track", "That exam or course does not exist.");
-  await ensureQuestionBank(admin);
+  await ensureQuestionBank();
 
   // Durable spam guard: limit how many sessions can be started per hour.
-  const since = new Date(Date.now() - 3_600_000).toISOString();
-  const { count, error: countError } = await admin
-    .from("study_sessions")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .gte("created_at", since);
-  if (countError) dbError(countError, "count sessions");
-  if ((count ?? 0) >= 120) throw new ApiError(429, "rate_limited", "You've started a lot of sessions this hour. Take a short break and try again.");
+  const recent = await maybeOne<{ n: number }>(
+    "select count(*)::int as n from public.study_sessions where user_id = $1 and created_at >= now() - interval '1 hour'",
+    [user.id],
+  );
+  if ((recent?.n ?? 0) >= 120) throw new ApiError(429, "rate_limited", "You've started a lot of sessions this hour. Take a short break and try again.");
 
   const now = new Date();
   const id = randomId();
   const { questionIds, dailyKey } = selectQuestions(config, `${user.id}:${id}`, now);
   if (questionIds.length === 0) throw new ApiError(400, "no_questions", "No questions match those filters yet. Try broadening your selection.");
 
-  const row = {
-    id,
-    user_id: user.id,
-    mode: config.mode,
-    track: config.track,
-    title: sessionTitle(config),
-    config: { ...config, count: questionIds.length },
-    question_ids: questionIds,
-    daily_key: dailyKey ?? null,
-    started_at: now.toISOString(),
-    deadline: deadlineFor(now, config.timeLimitSec),
-  };
-  const { data, error } = await admin.from("study_sessions").insert(row).select("*").single();
-  if (error) dbError(error, "insert session");
-  return toSession(data as SessionRow);
+  const row = await maybeOne<SessionRow>(
+    `insert into public.study_sessions (id, user_id, mode, track, title, config, question_ids, daily_key, started_at, deadline)
+     values ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10) returning *`,
+    [
+      id,
+      user.id,
+      config.mode,
+      config.track,
+      sessionTitle(config),
+      json({ ...config, count: questionIds.length }),
+      questionIds,
+      dailyKey ?? null,
+      now.toISOString(),
+      deadlineFor(now, config.timeLimitSec),
+    ],
+  );
+  return toSession(row!);
 }
 
-export async function getSessionForUser(userDb: SupabaseClient, sessionId: string) {
-  // RLS restricts this to the caller's own sessions.
-  const { data, error } = await userDb.from("study_sessions").select("*").eq("id", sessionId).maybeSingle();
-  if (error) {
-    if (error.code === "22P02") return null; // invalid uuid
-    dbError(error, "get session");
-  }
-  if (!data) return null;
-  const row = data as SessionRow;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function loadOwnSession(userId: string, sessionId: string): Promise<SessionRow | null> {
+  if (!UUID_RE.test(sessionId)) return null;
+  return maybeOne<SessionRow>("select * from public.study_sessions where id = $1 and user_id = $2", [sessionId, userId]);
+}
+
+export async function getSessionForUser(user: AuthUser, sessionId: string) {
+  const row = await loadOwnSession(user.id, sessionId);
+  if (!row) return null;
   return { session: toSession(row), draft: row.draft, result: row.result };
 }
 
-export async function listInProgressForUser(userDb: SupabaseClient): Promise<PracticeSession[]> {
-  const { data, error } = await userDb
-    .from("study_sessions")
-    .select("*")
-    .eq("status", "in_progress")
-    .order("created_at", { ascending: false })
-    .limit(5);
-  if (error) dbError(error, "list in-progress");
-  return ((data ?? []) as SessionRow[]).map(toSession);
+export async function listInProgressForUser(user: AuthUser): Promise<PracticeSession[]> {
+  const rows = await query<SessionRow>(
+    "select * from public.study_sessions where user_id = $1 and status = 'in_progress' order by created_at desc limit 5",
+    [user.id],
+  );
+  return rows.map(toSession);
 }
 
 const draftSchemaLimit = 60_000;
 
-export async function saveDraftForUser(admin: SupabaseClient, user: User, sessionId: string, draft: SessionDraft) {
+export async function saveDraftForUser(user: AuthUser, sessionId: string, draft: SessionDraft) {
   const serialized = JSON.stringify(draft);
   if (serialized.length > draftSchemaLimit) throw new ApiError(413, "too_large", "Draft is too large.");
-  const { data, error } = await admin
-    .from("study_sessions")
-    .select("id, status, deadline, started_at, config, question_ids, title, daily_key, draft, draft_saved_at, result, user_id")
-    .eq("id", sessionId)
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (error) dbError(error, "load session for draft");
-  if (!data) throw new ApiError(404, "not_found", "Session not found.");
-  const row = data as SessionRow;
+  const row = await loadOwnSession(user.id, sessionId);
+  if (!row) throw new ApiError(404, "not_found", "Session not found.");
   if (row.status !== "in_progress") return { saved: false, reason: "completed" as const };
   // After the deadline (plus grace) the draft is frozen: answers can no longer change.
   if (isLate(toSession(row), new Date())) return { saved: false, reason: "deadline" as const };
-  const { error: updateError } = await admin
-    .from("study_sessions")
-    .update({ draft, draft_saved_at: new Date().toISOString() })
-    .eq("id", sessionId)
-    .eq("status", "in_progress");
-  if (updateError) dbError(updateError, "save draft");
+  await query("update public.study_sessions set draft = $3::jsonb, draft_saved_at = now() where id = $1 and user_id = $2 and status = 'in_progress'", [
+    sessionId,
+    user.id,
+    serialized,
+  ]);
   return { saved: true as const };
 }
 
-/** Loads everything progress calculations need, through the user's RLS-scoped client. */
-export async function loadActivity(userDb: SupabaseClient, user: User, opts: { sinceDays?: number } = {}): Promise<UserActivity> {
+/** Loads everything progress calculations need for one user. */
+export async function loadActivity(user: AuthUser, opts: { sinceDays?: number } = {}): Promise<UserActivity> {
   const since = opts.sinceDays ? new Date(Date.now() - opts.sinceDays * 86_400_000).toISOString() : null;
-  let sessionsQuery = userDb
-    .from("study_sessions")
-    .select("result, completed_at")
-    .eq("status", "completed")
-    .order("completed_at", { ascending: false })
-    .limit(500);
-  if (since) sessionsQuery = sessionsQuery.gte("completed_at", since);
-  let ledgerQuery = userDb.from("xp_transactions").select("id, amount, reason, source_id, created_at").order("created_at", { ascending: false }).limit(5000);
-  if (since) ledgerQuery = ledgerQuery.gte("created_at", since);
-
-  const [sessions, ledger, achievements, saved, prefs, profile, matches] = await Promise.all([
-    sessionsQuery,
-    ledgerQuery,
-    userDb.from("user_achievements").select("achievement_id, earned_at"),
-    userDb.from("saved_questions").select("question_id"),
-    userDb.from("user_preferences").select("*").eq("user_id", user.id).maybeSingle(),
-    userDb.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    userDb
-      .from("match_participants")
-      .select("match_id, score, correct, rank, xp_awarded, multiplayer_matches!inner(finished_at, question_count, human_players, finalized_at, room_id, multiplayer_rooms!multiplayer_matches_room_id_fkey(code))")
-      .not("rank", "is", null)
-      .limit(500),
+  const [sessions, ledger, achievements, saved, prefRows, profileRows, matches] = await Promise.all([
+    query<{ result: SessionResult }>(
+      `select result from public.study_sessions
+        where user_id = $1 and status = 'completed' and ($2::timestamptz is null or completed_at >= $2)
+        order by completed_at desc limit 500`,
+      [user.id, since],
+    ),
+    query<{ id: number; amount: number; reason: XpReason; source_id: string; created_at: string }>(
+      `select id, amount, reason, source_id, created_at from public.xp_transactions
+        where user_id = $1 and ($2::timestamptz is null or created_at >= $2)
+        order by created_at desc limit 5000`,
+      [user.id, since],
+    ),
+    query<{ achievement_id: string; earned_at: string }>("select achievement_id, earned_at from public.user_achievements where user_id = $1", [user.id]),
+    query<{ question_id: string }>("select question_id from public.saved_questions where user_id = $1", [user.id]),
+    query<Record<string, unknown>>("select * from public.user_preferences where user_id = $1", [user.id]),
+    query<Record<string, unknown>>("select * from public.profiles where id = $1", [user.id]),
+    query<MatchRow>(
+      `select mp.match_id, mp.score, mp.correct, mp.rank, mp.xp_awarded,
+              m.finished_at, m.question_count, m.human_players, r.code as room_code
+         from public.match_participants mp
+         join public.multiplayer_matches m on m.id = mp.match_id
+         left join public.multiplayer_rooms r on r.id = m.room_id
+        where mp.user_id = $1 and mp.rank is not null
+        limit 500`,
+      [user.id],
+    ),
   ]);
-  for (const [res, label] of [
-    [sessions, "sessions"],
-    [ledger, "ledger"],
-    [achievements, "achievements"],
-    [saved, "saved"],
-    [prefs, "preferences"],
-    [profile, "profile"],
-    [matches, "matches"],
-  ] as const) {
-    if (res.error) dbError(res.error, `load ${label}`);
-  }
 
-  const p = prefs.data as Record<string, unknown> | null;
-  const pr = profile.data as Record<string, unknown> | null;
+  const p = prefRows[0] ?? null;
+  const pr = profileRows[0] ?? null;
   const preferences: Preferences = {
     ...DEFAULT_PREFERENCES,
     displayName: (pr?.display_name as string) ?? DEFAULT_PREFERENCES.displayName,
@@ -194,44 +189,36 @@ export async function loadActivity(userDb: SupabaseClient, user: User, opts: { s
     reminderEmails: (p?.reminder_emails as boolean) ?? false,
   };
 
-  type MatchRow = {
-    match_id: string;
-    score: number;
-    correct: number;
-    rank: number;
-    xp_awarded: number;
-    multiplayer_matches: { finished_at: string; question_count: number; human_players: number; multiplayer_rooms: { code: string } | null };
-  };
-  const matchSummaries: MatchSummary[] = ((matches.data ?? []) as unknown as MatchRow[]).map((m) => ({
+  const matchSummaries: MatchSummary[] = matches.map((m) => ({
     matchId: m.match_id,
-    roomCode: m.multiplayer_matches.multiplayer_rooms?.code ?? null,
+    roomCode: m.room_code,
     kind: "online",
-    finishedAt: m.multiplayer_matches.finished_at,
+    finishedAt: m.finished_at,
     rank: m.rank,
-    players: m.multiplayer_matches.human_players,
-    humanPlayers: m.multiplayer_matches.human_players,
+    players: m.human_players,
+    humanPlayers: m.human_players,
     score: m.score,
     correct: m.correct,
-    total: m.multiplayer_matches.question_count,
-    won: m.rank === 1 && m.multiplayer_matches.human_players >= 2,
+    total: m.question_count,
+    won: m.rank === 1 && m.human_players >= 2,
     xpTotal: m.xp_awarded,
   }));
 
   return {
-    results: ((sessions.data ?? []) as { result: SessionResult }[]).map((s) => s.result).filter(Boolean),
+    results: sessions.map((s) => s.result).filter(Boolean),
     matches: matchSummaries,
-    xpLedger: ((ledger.data ?? []) as { id: number; amount: number; reason: XpReason; source_id: string; created_at: string }[]).map((e) => ({
+    xpLedger: ledger.map((e) => ({
       id: String(e.id),
       amount: e.amount,
       reason: e.reason,
       sourceId: e.source_id,
       createdAt: e.created_at,
     })) satisfies XpEntry[],
-    achievements: ((achievements.data ?? []) as { achievement_id: string; earned_at: string }[]).map((a) => ({
+    achievements: achievements.map((a) => ({
       id: a.achievement_id,
       earnedAt: a.earned_at,
     })) satisfies EarnedAchievement[],
-    saved: ((saved.data ?? []) as { question_id: string }[]).map((s) => s.question_id),
+    saved: saved.map((s) => s.question_id),
     preferences,
   };
 }
@@ -241,17 +228,13 @@ export async function loadActivity(userDb: SupabaseClient, user: User, opts: { s
  * complete, returns the stored result (idempotent resubmission).
  */
 export async function submitSessionForUser(
-  admin: SupabaseClient,
-  userDb: SupabaseClient,
-  user: User,
+  user: AuthUser,
   sessionId: string,
   submitted: Pick<SessionDraft, "answers" | "flagged" | "timeSpentMs">,
 ): Promise<SessionResult> {
-  await ensureQuestionBank(admin);
-  const { data, error } = await admin.from("study_sessions").select("*").eq("id", sessionId).eq("user_id", user.id).maybeSingle();
-  if (error) dbError(error, "load session");
-  if (!data) throw new ApiError(404, "not_found", "Session not found.");
-  const row = data as SessionRow;
+  await ensureQuestionBank();
+  const row = await loadOwnSession(user.id, sessionId);
+  if (!row) throw new ApiError(404, "not_found", "Session not found.");
   if (row.status === "completed" && row.result) return row.result;
 
   const session = toSession(row);
@@ -261,26 +244,21 @@ export async function submitSessionForUser(
   const late = isLate(session, now);
   const source = late ? (row.draft ?? { answers: {}, flagged: [], timeSpentMs: {} }) : submitted;
 
-  const activity = await loadActivity(userDb, user, { sinceDays: XP_RULES.freshWindowDays + 1 });
+  const activity = await loadActivity(user, { sinceDays: XP_RULES.freshWindowDays + 1 });
   const ctx = rewardContextFromHistory({ ...activity, timezone: activity.preferences.timezone }, session, now);
   if (session.config.mode === "timed") {
-    const { data: best } = await admin
-      .from("study_sessions")
-      .select("challenge_score")
-      .eq("user_id", user.id)
-      .eq("mode", "timed")
-      .eq("track", session.config.track)
-      .eq("total", session.questionIds.length)
-      .eq("status", "completed")
-      .order("challenge_score", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const best = await maybeOne<{ challenge_score: number | null }>(
+      `select challenge_score from public.study_sessions
+        where user_id = $1 and mode = 'timed' and track = $2 and total = $3 and status = 'completed'
+        order by challenge_score desc nulls last limit 1`,
+      [user.id, session.config.track, session.questionIds.length],
+    );
     ctx.previousBest = (best?.challenge_score as number | null | undefined) ?? null;
   }
   const result = finalizeSession(session, source, ctx, now);
 
   // Achievements are evaluated against complete history plus this result.
-  const history = await loadActivity(userDb, user);
+  const history = await loadActivity(user);
   const after: UserActivity = {
     ...history,
     results: [result, ...history.results],
@@ -309,20 +287,21 @@ export async function submitSessionForUser(
     time_ms: item.timeMs,
     flagged: item.flagged,
   }));
-  const { data: completed, error: rpcError } = await admin.rpc("complete_study_session", {
-    p_session_id: session.id,
-    p_user_id: user.id,
-    p_result: result,
-    p_answers: answers,
-    p_xp: result.xp.map((a) => ({ reason: a.reason, amount: a.amount })),
-    p_xp_question_ids: result.xpQuestionIds,
-    p_achievements: result.newAchievements,
-    p_activity_date: localDateKey(now, activity.preferences.timezone),
-  });
-  if (rpcError) dbError(rpcError, "complete session");
+  const completed = await maybeOne<{ ok: boolean }>(
+    "select public.complete_study_session($1, $2, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8) as ok",
+    [
+      session.id,
+      user.id,
+      json(result),
+      json(answers),
+      json(result.xp.map((a) => ({ reason: a.reason, amount: a.amount }))),
+      result.xpQuestionIds,
+      result.newAchievements,
+      localDateKey(now, activity.preferences.timezone),
+    ],
+  );
   // Either we completed it, or a concurrent request did: return the stored version.
-  const { data: stored, error: storedError } = await admin.from("study_sessions").select("result").eq("id", session.id).single();
-  if (storedError) dbError(storedError, "reload result");
-  if (!completed && !stored?.result) throw new ApiError(409, "conflict", "This session could not be completed. Please refresh.");
-  return (stored?.result as SessionResult) ?? result;
+  const stored = await maybeOne<{ result: SessionResult | null }>("select result from public.study_sessions where id = $1", [session.id]);
+  if (!completed?.ok && !stored?.result) throw new ApiError(409, "conflict", "This session could not be completed. Please refresh.");
+  return stored?.result ?? result;
 }

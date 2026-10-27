@@ -17,23 +17,18 @@ import { api, AppError } from "@/lib/data/repository";
 import { computeProgress } from "@/lib/progression/stats";
 
 export default function ProfilePage() {
-  const { activity, user, supabase, config, dataScope } = useApp();
-  const [username, setUsername] = React.useState<string | null>(null);
-  const [draftName, setDraftName] = React.useState("");
+  const { activity, user, config, dataScope } = useApp();
+  const initialUsername = user && !user.isGuest ? user.username : null;
+  const [username, setUsername] = React.useState<string | null>(initialUsername);
+  const [draftName, setDraftName] = React.useState(initialUsername ?? "");
   const [saving, setSaving] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!supabase || !user || user.isGuest) return;
-    supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setUsername((data?.username as string) ?? null);
-        setDraftName((data?.username as string) ?? "");
-      });
-  }, [supabase, user]);
+  const [syncedFor, setSyncedFor] = React.useState(user?.id);
+  if (syncedFor !== user?.id) {
+    // The signed-in user changed (or finished loading): reset the form from it.
+    setSyncedFor(user?.id);
+    setUsername(initialUsername);
+    setDraftName(initialUsername ?? "");
+  }
 
   if (!activity) return <Skeleton className="h-96" />;
   const p = computeProgress(activity);

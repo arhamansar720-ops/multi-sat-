@@ -2,8 +2,8 @@ import { expect, test, type Browser, type Page } from "@playwright/test";
 import { answerAndSubmit, startQuick } from "./helpers";
 
 /**
- * Runs against a deployment connected to Supabase with email confirmation
- * disabled and anonymous sign-ins enabled (the local `supabase start` config).
+ * Runs against a deployment connected to a Postgres database (DATABASE_URL),
+ * e.g. a local one started with `npm run build && npm start`.
  *   E2E_CONNECTED_URL=http://localhost:3000 npx playwright test --project=connected
  */
 async function signUp(page: Page, name: string) {

@@ -15,7 +15,7 @@ export function RequiresAccount({ feature, children }: { feature: string; childr
       <EmptyState
         icon={WifiOff}
         title={`${feature} needs a connected backend`}
-        description={`This deployment is running in demo mode, where data stays in your browser. ${feature} requires the Supabase setup described in the README.`}
+        description={`This deployment is running in demo mode, where data stays in your browser. ${feature} requires the database setup described in the README.`}
         action={
           <Button asChild variant="outline">
             <Link href="/play/local">Try a local practice match</Link>

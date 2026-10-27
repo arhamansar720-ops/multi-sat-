@@ -59,7 +59,7 @@ export default function PlayPage() {
 
       {!connected && (
         <Notice tone="warning" icon={WifiOff} className="mb-6">
-          <span className="font-medium">Online multiplayer isn&apos;t available in demo mode.</span> It needs the Supabase backend described in the README. You can still try a local practice match below; the other players are clearly labeled bots, not real people.
+          <span className="font-medium">Online multiplayer isn&apos;t available in demo mode.</span> It needs the database setup described in the README. You can still try a local practice match below; the other players are clearly labeled bots, not real people.
         </Notice>
       )}
 

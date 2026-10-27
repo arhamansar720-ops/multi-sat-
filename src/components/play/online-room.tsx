@@ -1,6 +1,5 @@
 "use client";
 
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Check, Copy, Crown, DoorOpen, Link2, Loader2, LogOut, Play, Settings2, UserRound, Users, Wifi, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { MatchStage, useServerNow } from "./match-stage";
 import { RoomSettingsForm } from "./room-settings-form";
 
+const POLL_MS = 1500;
 const PENDING_NAME_KEY = "studyduel:pending-display-name";
 
 function pendingName(): string | null {
@@ -37,13 +37,13 @@ function pendingName(): string | null {
 type Loaded = { kind: "state"; state: RoomState } | { kind: "preview"; preview: RoomPreview };
 
 export function OnlineRoom({ rawCode }: { rawCode: string }) {
-  const { config, authReady, user, supabase } = useApp();
+  const { config, authReady, user } = useApp();
   const code = normalizeRoomCode(rawCode);
   const [data, setData] = React.useState<Loaded | null>(null);
   const [error, setError] = React.useState<AppError | null>(null);
   const [offset, setOffset] = React.useState(0);
+  /** The last poll reached the server. */
   const [live, setLive] = React.useState(false);
-  const [presence, setPresence] = React.useState<Set<string>>(new Set());
   const inFlight = React.useRef(false);
 
   const refresh = React.useCallback(async () => {
@@ -58,7 +58,9 @@ export function OnlineRoom({ rawCode }: { rawCode: string }) {
         setData({ kind: "state", state: res.state });
       } else if (res.preview) setData({ kind: "preview", preview: res.preview });
       setError(null);
+      setLive(true);
     } catch (err) {
+      setLive(false);
       setError(err instanceof AppError ? err : new AppError("Couldn't load this room."));
     } finally {
       inFlight.current = false;
@@ -70,39 +72,12 @@ export function OnlineRoom({ rawCode }: { rawCode: string }) {
   }, [authReady, user, refresh]);
 
   const isMember = data?.kind === "state";
-  const userId = user?.id ?? null;
-  // Realtime: private channel restricted by RLS to room members. Carries "something changed" pings and presence.
-  React.useEffect(() => {
-    if (!supabase || !code || !isMember || !userId) return;
-    let channel: RealtimeChannel | null = null;
-    let cancelled = false;
-    (async () => {
-      await supabase.realtime.setAuth();
-      if (cancelled) return;
-      channel = supabase.channel(`room:${code}`, { config: { private: true, presence: { key: userId, enabled: true } } });
-      channel
-        .on("broadcast", { event: "state" }, () => void refresh())
-        .on("presence", { event: "sync" }, () => {
-          setPresence(new Set(Object.keys(channel?.presenceState() ?? {})));
-        })
-        .subscribe(async (status) => {
-          setLive(status === "SUBSCRIBED");
-          if (status === "SUBSCRIBED") await channel?.track({ at: Date.now() });
-        });
-    })();
-    return () => {
-      cancelled = true;
-      setLive(false);
-      if (channel) void supabase.removeChannel(channel);
-    };
-  }, [supabase, code, isMember, userId, refresh]);
-
-  // Polling fallback (slower when realtime is connected) keeps state and presence fresh.
+  // The server is the source of truth: members poll it, and any poll can apply a due phase change.
   React.useEffect(() => {
     if (!isMember) return;
-    const t = window.setInterval(() => void refresh(), live ? 5000 : 2000);
+    const t = window.setInterval(() => void refresh(), POLL_MS);
     return () => window.clearInterval(t);
-  }, [isMember, live, refresh]);
+  }, [isMember, refresh]);
 
   if (config.mode !== "connected") {
     return (
@@ -122,7 +97,7 @@ export function OnlineRoom({ rawCode }: { rawCode: string }) {
   }
   if (!data) return <Skeleton className="h-80" />;
   if (data.kind === "preview") return <JoinRoom preview={data.preview} onJoined={refresh} />;
-  return <RoomView state={data.state} offset={offset} live={live} presence={presence} refresh={refresh} />;
+  return <RoomView state={data.state} offset={offset} live={live} refresh={refresh} />;
 }
 
 function RoomError({ title, message }: { title: string; message: string }) {
@@ -246,7 +221,7 @@ function JoinRoom({ preview, onJoined }: { preview: RoomPreview; onJoined: () =>
   );
 }
 
-function RoomView({ state, offset, live, presence, refresh }: { state: RoomState; offset: number; live: boolean; presence: Set<string>; refresh: () => Promise<void> }) {
+function RoomView({ state, offset, live, refresh }: { state: RoomState; offset: number; live: boolean; refresh: () => Promise<void> }) {
   const router = useRouter();
   const now = useServerNow(offset);
   const [submitting, setSubmitting] = React.useState(false);
@@ -318,7 +293,7 @@ function RoomView({ state, offset, live, presence, refresh }: { state: RoomState
               }
             />
           )}
-          <Lobby state={state} presence={presence} refresh={refresh} onLeft={() => router.push("/play")} />
+          <Lobby state={state} refresh={refresh} onLeft={() => router.push("/play")} />
         </>
       )}
     </div>
@@ -345,7 +320,7 @@ function RoomHeader({ state, live }: { state: RoomState; live: boolean }) {
         <p className="select-all font-mono text-3xl font-semibold tracking-[0.25em]">{state.room.code}</p>
         <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
           {live ? <Wifi className="size-3.5 text-success" aria-hidden /> : <WifiOff className="size-3.5" aria-hidden />}
-          {live ? "Live updates connected" : "Live updates reconnecting; refreshing every 2 seconds"}
+          {live ? "Live updates connected" : "Reconnecting…"}
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -360,14 +335,14 @@ function RoomHeader({ state, live }: { state: RoomState; live: boolean }) {
   );
 }
 
-function Lobby({ state, presence, refresh, onLeft }: { state: RoomState; presence: Set<string>; refresh: () => Promise<void>; onLeft: () => void }) {
+function Lobby({ state, refresh, onLeft }: { state: RoomState; refresh: () => Promise<void>; onLeft: () => void }) {
   const [busy, setBusy] = React.useState<string | null>(null);
   const [leaveOpen, setLeaveOpen] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
   const [draft, setDraft] = React.useState<RoomSettings>(state.room.settings);
   const me = state.members.find((m) => m.isMe);
   const settings = state.room.settings;
-  const online = (m: RoomState["members"][number]) => m.online || presence.has(m.userId);
+  const online = (m: RoomState["members"][number]) => m.online;
   const onlineCount = state.members.filter(online).length;
   const notReady = state.members.filter((m) => m.role !== "host" && !m.isReady && online(m));
   const canStart = state.me.isHost && onlineCount >= settings.minPlayers && notReady.length === 0;

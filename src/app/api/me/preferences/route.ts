@@ -2,8 +2,9 @@ import { z } from "zod";
 import { getTrack } from "@/lib/content/catalog";
 import { displayNameSchema } from "@/lib/multiplayer/rules";
 import { safeTimeZone } from "@/lib/progression/dates";
-import { dbError, fail, ok, rateLimit, readJson, route } from "@/lib/server/http";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/server/auth";
+import { isUniqueViolation, query } from "@/lib/server/db";
+import { fail, ok, rateLimit, readJson, route } from "@/lib/server/http";
 
 const prefsSchema = z.object({
   displayName: displayNameSchema.optional(),
@@ -22,21 +23,24 @@ const prefsSchema = z.object({
 });
 
 export const PUT = route(async (request: Request) => {
-  const { user, userDb } = await requireUser();
+  const user = await requireUser();
   rateLimit(`prefs:${user.id}`, 30, 60_000);
   const p = prefsSchema.parse(await readJson(request));
   if (p.tracks?.some((t) => !getTrack(t))) return fail(400, "unknown_track", "One of the selected exams does not exist.");
 
-  // Both updates run with the user's own JWT: RLS and column grants limit them to safe fields on their own rows.
+  // Only these whitelisted columns can change, and only on the caller's own rows.
   const profilePatch: Record<string, unknown> = {};
   if (p.displayName !== undefined) profilePatch.display_name = p.displayName;
   if (p.username !== undefined) profilePatch.username = p.username;
   if (p.leaderboardOptIn !== undefined) profilePatch.leaderboard_opt_in = p.leaderboardOptIn;
   if (p.shareActivityWithFriends !== undefined) profilePatch.share_activity_with_friends = p.shareActivityWithFriends;
   if (Object.keys(profilePatch).length) {
-    const { error } = await userDb.from("profiles").update(profilePatch).eq("id", user.id);
-    if (error?.code === "23505") return fail(409, "username_taken", "That username is already taken.");
-    if (error) dbError(error, "update profile");
+    try {
+      await updateRow("profiles", "id", user.id, profilePatch);
+    } catch (err) {
+      if (isUniqueViolation(err)) return fail(409, "username_taken", "That username is already taken.");
+      throw err;
+    }
   }
 
   const prefPatch: Record<string, unknown> = {};
@@ -50,8 +54,14 @@ export const PUT = route(async (request: Request) => {
   if (p.onboarded !== undefined) prefPatch.onboarded = p.onboarded;
   if (p.reminderEmails !== undefined) prefPatch.reminder_emails = p.reminderEmails;
   if (Object.keys(prefPatch).length) {
-    const { error } = await userDb.from("user_preferences").update(prefPatch).eq("user_id", user.id);
-    if (error) dbError(error, "update preferences");
+    await updateRow("user_preferences", "user_id", user.id, prefPatch);
   }
   return ok({ saved: true });
 });
+
+/** Column names come from the fixed patch keys above, never from user input. */
+async function updateRow(table: "profiles" | "user_preferences", key: "id" | "user_id", id: string, patch: Record<string, unknown>) {
+  const cols = Object.keys(patch);
+  const sets = cols.map((c, i) => `${c} = $${i + 2}`).join(", ");
+  await query(`update public.${table} set ${sets} where ${key} = $1`, [id, ...cols.map((c) => patch[c])]);
+}

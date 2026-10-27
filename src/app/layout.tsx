@@ -4,7 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { Toaster } from "sonner";
 import { AppProvider } from "@/components/providers/app-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { PRODUCT } from "@/lib/config";
+import { getServerConfig, PRODUCT } from "@/lib/config";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-dvh font-sans antialiased">
         <ThemeProvider>
-          <AppProvider>
+          <AppProvider config={getServerConfig()}>
             {children}
             <Toaster position="top-center" richColors closeButton />
           </AppProvider>

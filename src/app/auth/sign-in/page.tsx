@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { AppError } from "@/lib/data/repository";
+import { api, AppError } from "@/lib/data/repository";
 
 function safeNext(raw: string | null): string {
   return raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/dashboard";
 }
 
 function SignInForm() {
-  const { supabase, continueAsGuest, refreshActivity } = useApp();
+  const { online, continueAsGuest, refreshUser } = useApp();
   const router = useRouter();
   const next = safeNext(useSearchParams().get("next"));
   const [email, setEmail] = React.useState("");
@@ -28,17 +28,19 @@ function SignInForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!online) return;
     setBusy("password");
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    setBusy(null);
-    if (error) {
-      setError(/confirm/i.test(error.message) ? "Please confirm your email address first. Check your inbox for the link." : "That email and password don't match an account.");
+    try {
+      await api("/api/auth/sign-in", { method: "POST", json: { email: email.trim(), password } });
+    } catch (err) {
+      setBusy(null);
+      setError(err instanceof AppError ? err.message : "Sign-in failed. Please try again.");
       return;
     }
+    await refreshUser();
+    setBusy(null);
     toast.success("Signed in");
-    await refreshActivity();
     router.push(next);
     router.refresh();
   };

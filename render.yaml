@@ -1,0 +1,15 @@
+# Render Blueprint: creates the StudyDuel Postgres database.
+# Render dashboard -> New -> Blueprint -> pick this repo. The app itself stays on Vercel.
+# Virginia is closest to Vercel's default function region (iad1, Washington, D.C.).
+databases:
+  - name: studyduel-db
+    databaseName: studyduel
+    user: studyduel
+    plan: basic-256mb
+    region: virginia
+    postgresMajorVersion: "16"
+    # Vercel functions have no fixed IPs, so external connections must be allowed from anywhere
+    # (they still need the password and use TLS).
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere

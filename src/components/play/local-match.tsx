@@ -58,7 +58,7 @@ export function LocalMatch() {
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>Bots answer at random times and get questions right at fixed rates that drop with difficulty.</p>
               <p>You earn {10} XP per correct answer on this device. There&apos;s no victory bonus and bot matches don&apos;t count toward multiplayer achievements or leaderboards.</p>
-              <Notice tone="info">For real matches with friends, use a deployment connected to Supabase and create a room.</Notice>
+              <Notice tone="info">For real matches with friends, use a deployment connected to a database and create a room.</Notice>
             </CardContent>
           </Card>
         </div>

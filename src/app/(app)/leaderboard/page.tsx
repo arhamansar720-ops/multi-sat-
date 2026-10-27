@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState, Notice } from "@/components/ui/states";
+import { api } from "@/lib/data/repository";
 import { levelInfo } from "@/lib/progression/xp";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,7 @@ export default function LeaderboardPage() {
 }
 
 function LeaderboardView() {
-  const { supabase, activity } = useApp();
+  const { activity } = useApp();
   const [scope, setScope] = React.useState<Scope>("global");
   const [period, setPeriod] = React.useState<Period>("week");
   const [metric, setMetric] = React.useState<Metric>("xp");
@@ -51,13 +52,16 @@ function LeaderboardView() {
   const [error, setError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
-    if (!supabase) return;
     setRows(null);
-    const { data, error: err } = await supabase.rpc("get_leaderboard", { p_period: period, p_metric: metric, p_scope: scope, p_limit: 50 });
-    if (err) return setError("Couldn't load the leaderboard.");
-    setError(null);
-    setRows((data ?? []) as Row[]);
-  }, [supabase, scope, period, metric]);
+    try {
+      const params = new URLSearchParams({ period, metric, scope });
+      const data = await api<{ rows: Row[] }>(`/api/leaderboard?${params}`);
+      setError(null);
+      setRows(data.rows);
+    } catch {
+      setError("Couldn't load the leaderboard.");
+    }
+  }, [scope, period, metric]);
   React.useEffect(() => void load(), [load]);
 
   const value = (r: Row) => (metric === "xp" ? r.xp : metric === "correct" ? r.correct : metric === "wins" ? r.wins : r.active_days);

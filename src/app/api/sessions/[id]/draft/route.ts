@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ok, rateLimit, readJson, route } from "@/lib/server/http";
 import { saveDraftForUser } from "@/lib/server/sessions";
-import { requireUser } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/server/auth";
 
 const draftSchema = z.object({
   answers: z.record(z.string().max(64), z.array(z.string().max(16)).max(6)),
@@ -18,8 +18,8 @@ const draftSchema = z.object({
 
 export const PUT = route(async (request: Request, ctx: RouteContext<"/api/sessions/[id]/draft">) => {
   const { id } = await ctx.params;
-  const { user, admin } = await requireUser();
+  const user = await requireUser();
   rateLimit(`session:draft:${user.id}`, 120, 60_000);
   const draft = draftSchema.parse(await readJson(request));
-  return ok(await saveDraftForUser(admin, user, id, draft));
+  return ok(await saveDraftForUser(user, id, draft));
 });

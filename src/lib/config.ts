@@ -14,43 +14,44 @@ export const PRODUCT = {
 
 export type AppMode = "demo" | "connected";
 
+/** What the browser is told about the backend. Contains no secrets. */
 export interface PublicConfigStatus {
   mode: AppMode;
-  /** Supabase variables were partially provided: likely a broken deployment. */
+  /** The database variable is set but unusable: likely a broken deployment. */
   misconfigured: boolean;
   problems: string[];
-  supabaseUrl: string | null;
-  supabaseAnonKey: string | null;
+  /** Password reset emails can be sent (an email provider is configured). */
+  passwordResetEnabled: boolean;
+}
+
+/** Server-only: the Postgres connection string (Render: the database's External/Internal URL). */
+export function getDatabaseUrl(): string | null {
+  if (typeof window !== "undefined") return null;
+  if (process.env.NEXT_PUBLIC_FORCE_DEMO_MODE === "true") return null;
+  const url = process.env.DATABASE_URL?.trim() || null;
+  return url && /^postgres(ql)?:\/\//.test(url) ? url : null;
+}
+
+/** Server-only: Resend API settings for password reset emails. */
+export function getEmailConfig(): { apiKey: string; from: string } | null {
+  if (typeof window !== "undefined") return null;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const from = process.env.EMAIL_FROM?.trim();
+  return apiKey && from ? { apiKey, from } : null;
 }
 
 /**
- * Reads only NEXT_PUBLIC_* variables so it is safe for client and server.
- * Must reference process.env.NEXT_PUBLIC_* literally so Next can inline them.
+ * Computed on the server (root layout, health route) and passed to the
+ * browser, so DATABASE_URL never needs a NEXT_PUBLIC_ twin.
  */
-export function getPublicConfig(): PublicConfigStatus {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || null;
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim() ||
-    null;
-  const forceDemo = process.env.NEXT_PUBLIC_FORCE_DEMO_MODE === "true";
+export function getServerConfig(): PublicConfigStatus {
   const problems: string[] = [];
-
-  if (forceDemo) {
-    return { mode: "demo", misconfigured: false, problems, supabaseUrl: null, supabaseAnonKey: null };
+  const passwordResetEnabled = Boolean(getEmailConfig());
+  if (process.env.NEXT_PUBLIC_FORCE_DEMO_MODE === "true") {
+    return { mode: "demo", misconfigured: false, problems, passwordResetEnabled: false };
   }
-  if (url && !key) problems.push("NEXT_PUBLIC_SUPABASE_URL is set but NEXT_PUBLIC_SUPABASE_ANON_KEY is missing.");
-  if (!url && key) problems.push("NEXT_PUBLIC_SUPABASE_ANON_KEY is set but NEXT_PUBLIC_SUPABASE_URL is missing.");
-  if (url && !/^https?:\/\//.test(url)) problems.push("NEXT_PUBLIC_SUPABASE_URL must start with http:// or https://.");
-
-  if (url && key && problems.length === 0) {
-    return { mode: "connected", misconfigured: false, problems, supabaseUrl: url, supabaseAnonKey: key };
-  }
-  return { mode: "demo", misconfigured: problems.length > 0, problems, supabaseUrl: null, supabaseAnonKey: null };
-}
-
-/** Server-only check; never import the returned key into client code. */
-export function getServiceRoleKey(): string | null {
-  if (typeof window !== "undefined") return null;
-  return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || process.env.SUPABASE_SECRET_KEY?.trim() || null;
+  const raw = process.env.DATABASE_URL?.trim();
+  if (raw && !getDatabaseUrl()) problems.push("DATABASE_URL must be a postgres:// or postgresql:// connection string.");
+  if (getDatabaseUrl()) return { mode: "connected", misconfigured: false, problems, passwordResetEnabled };
+  return { mode: "demo", misconfigured: problems.length > 0, problems, passwordResetEnabled: false };
 }

@@ -19,7 +19,7 @@ export function AuthCard({ title, description, children }: { title: string; desc
           <div className="space-y-4 text-center">
             <HardDrive className="mx-auto size-8 text-muted-foreground" aria-hidden />
             <p className="text-sm text-muted-foreground">
-              Accounts need a connected Supabase backend, which this deployment doesn&apos;t have. You can use every solo feature right now in demo mode; progress stays in this browser.
+              Accounts need a connected database, which this deployment doesn&apos;t have. You can use every solo feature right now in demo mode; progress stays in this browser.
             </p>
             <Button asChild className="w-full">
               <Link href="/dashboard">Continue in demo mode</Link>

@@ -1,98 +1,104 @@
 /**
- * Database authorization tests. They run against a real Supabase instance and
- * are skipped unless these variables are set (e.g. from `supabase start`):
- *   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
- * Run with: npm run test:db
+ * Database tests. They run against a real Postgres database (a throwaway
+ * local one, never production) and are skipped unless DATABASE_URL is set:
+ *   DATABASE_URL=postgres://postgres:postgres@localhost:5432/studyduel_test npm run test:db
  */
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { AuthUser } from "@/lib/server/auth";
+import { getPool, maybeOne, query } from "@/lib/server/db";
+import { ensureQuestionBank } from "@/lib/server/question-sync";
+import { friendAction, getFriends, getLeaderboard } from "@/lib/server/social";
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SR = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const enabled = Boolean(URL && ANON && SR);
-const opts = { auth: { persistSession: false, autoRefreshToken: false } };
+const enabled = Boolean(process.env.DATABASE_URL);
 
-async function makeUser(admin: SupabaseClient, tag: string) {
-  const email = `${tag}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
-  const { data, error } = await admin.auth.admin.createUser({ email, password: "password123", email_confirm: true, user_metadata: { display_name: tag } });
-  if (error) throw error;
-  const client = createClient(URL!, ANON!, opts);
-  await client.auth.signInWithPassword({ email, password: "password123" });
-  const { data: profile } = await admin.from("profiles").select("username").eq("id", data.user.id).single();
-  return { id: data.user.id, client, username: profile!.username as string };
+async function makeUser(tag: string, opts: { guest?: boolean } = {}): Promise<AuthUser> {
+  const email = opts.guest ? null : `${tag.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
+  const user = await maybeOne<{ id: string }>(
+    "insert into public.users (email, password_hash, is_anonymous) values ($1, $2, $3) returning id",
+    [email, opts.guest ? null : "scrypt$test", Boolean(opts.guest)],
+  );
+  const username = opts.guest ? null : `${tag.toLowerCase()}_${Math.random().toString(36).slice(2, 8)}`;
+  await query("insert into public.profiles (id, username, display_name, is_guest) values ($1, $2, $3, $4)", [user!.id, username, tag, Boolean(opts.guest)]);
+  await query("insert into public.user_preferences (user_id) values ($1)", [user!.id]);
+  return { id: user!.id, email, isGuest: Boolean(opts.guest), displayName: tag, username };
 }
 
-describe.skipIf(!enabled)("row level security and trusted functions", () => {
-  let admin: SupabaseClient;
-  let victim: Awaited<ReturnType<typeof makeUser>>;
-  let attacker: Awaited<ReturnType<typeof makeUser>>;
+describe.skipIf(!enabled)("database functions and invariants", () => {
+  let victim: AuthUser;
+  let attacker: AuthUser;
   const sessionId = crypto.randomUUID();
 
   beforeAll(async () => {
-    admin = createClient(URL!, SR!, opts);
-    victim = await makeUser(admin, "Victim");
-    attacker = await makeUser(admin, "Attacker");
-    await admin.from("study_sessions").insert({ id: sessionId, user_id: victim.id, mode: "quick", track: "sat", title: "t", config: {}, question_ids: ["sat-math-alg-001"], status: "completed" });
-    await admin.from("xp_transactions").insert({ user_id: victim.id, amount: 50, reason: "session_complete", source_type: "session", source_id: sessionId });
+    await ensureQuestionBank();
+    victim = await makeUser("Victim");
+    attacker = await makeUser("Attacker");
+    await query(
+      "insert into public.study_sessions (id, user_id, mode, track, title, config, question_ids, status) values ($1, $2, 'quick', 'sat', 't', '{}', $3, 'completed')",
+      [sessionId, victim.id, ["sat-math-alg-001"]],
+    );
+    await query("insert into public.xp_transactions (user_id, amount, reason, source_type, source_id) values ($1, 50, 'session_complete', 'session', $2)", [victim.id, sessionId]);
   });
 
-  it("hides other users' study history, XP, and profiles", async () => {
-    expect((await attacker.client.from("study_sessions").select("*").eq("user_id", victim.id)).data).toEqual([]);
-    expect((await attacker.client.from("xp_transactions").select("*").eq("user_id", victim.id)).data).toEqual([]);
-    expect((await attacker.client.from("profiles").select("*").eq("id", victim.id)).data).toEqual([]);
-    expect((await attacker.client.from("question_keys").select("*").limit(1)).data ?? []).toEqual([]);
+  afterAll(async () => {
+    await getPool()?.end();
   });
 
-  it("prevents XP manipulation", async () => {
-    expect((await attacker.client.from("profiles").update({ total_xp: 999999 }).eq("id", attacker.id)).error).toBeTruthy();
-    expect((await attacker.client.from("xp_transactions").insert({ user_id: attacker.id, amount: 1000, reason: "match_win", source_type: "match", source_id: sessionId })).error).toBeTruthy();
-    const rpc = await attacker.client.rpc("complete_study_session", {
-      p_session_id: sessionId, p_user_id: attacker.id, p_result: {}, p_answers: [], p_xp: [{ reason: "match_win", amount: 1000 }],
-      p_xp_question_ids: [], p_achievements: [], p_activity_date: "2026-01-01",
-    });
-    expect(rpc.error).toBeTruthy();
-    expect((await attacker.client.rpc("finalize_match", { p_match_id: sessionId, p_participants: [], p_xp: [], p_achievements: [], p_activity: [] })).error).toBeTruthy();
-    const { data } = await admin.from("profiles").select("total_xp").eq("id", victim.id).single();
-    expect(data!.total_xp).toBe(50);
-  });
-
-  it("lets users edit only safe profile fields on their own row", async () => {
-    const own = await attacker.client.from("profiles").update({ display_name: "Renamed" }).eq("id", attacker.id).select();
-    expect(own.error).toBeNull();
-    expect(own.data).toHaveLength(1);
-    const other = await attacker.client.from("profiles").update({ display_name: "Pwned" }).eq("id", victim.id).select();
-    expect(other.data ?? []).toHaveLength(0);
+  it("keeps total_xp in sync with the ledger", async () => {
+    const row = await maybeOne<{ total_xp: number }>("select total_xp from public.profiles where id = $1", [victim.id]);
+    expect(row!.total_xp).toBe(50);
   });
 
   it("ledger rewards are idempotent per source", async () => {
-    const dup = await admin.from("xp_transactions").insert({ user_id: victim.id, amount: 50, reason: "session_complete", source_type: "session", source_id: sessionId });
-    expect(dup.error?.code).toBe("23505");
+    await expect(
+      query("insert into public.xp_transactions (user_id, amount, reason, source_type, source_id) values ($1, 50, 'session_complete', 'session', $2)", [victim.id, sessionId]),
+    ).rejects.toMatchObject({ code: "23505" });
+  });
+
+  it("completes a session exactly once", async () => {
+    const id = crypto.randomUUID();
+    await query(
+      "insert into public.study_sessions (id, user_id, mode, track, title, config, question_ids) values ($1, $2, 'quick', 'sat', 't', '{}', $3)",
+      [id, attacker.id, ["sat-math-alg-001"]],
+    );
+    const result = JSON.stringify({ completedAt: new Date().toISOString(), correctCount: 1, answeredCount: 1, total: 1, durationSec: 30 });
+    const answers = JSON.stringify([{ question_id: "sat-math-alg-001", position: 0, response: ["A"], is_correct: true, time_ms: 1000, flagged: false }]);
+    const xp = JSON.stringify([{ reason: "session_complete", amount: 20 }]);
+    const call = () =>
+      maybeOne<{ ok: boolean }>("select public.complete_study_session($1, $2, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8) as ok", [id, attacker.id, result, answers, xp, [], [], "2026-01-01"]);
+    expect((await call())!.ok).toBe(true);
+    expect((await call())!.ok).toBe(false);
+    const xpRow = await maybeOne<{ total_xp: number }>("select total_xp from public.profiles where id = $1", [attacker.id]);
+    expect(xpRow!.total_xp).toBe(20);
+    // A different user can't complete someone else's session.
+    const other = await maybeOne<{ ok: boolean }>("select public.complete_study_session($1, $2, $3::jsonb, $4::jsonb, $5::jsonb, $6, $7, $8) as ok", [sessionId, attacker.id, result, answers, xp, [], [], "2026-01-01"]);
+    expect(other!.ok).toBe(false);
   });
 
   it("supports friend requests, acceptance, and a private friends leaderboard", async () => {
-    expect((await attacker.client.rpc("send_friend_request", { p_username: attacker.username })).data).toBe("self");
-    expect((await attacker.client.rpc("send_friend_request", { p_username: "no_such_user_zz" })).data).toBe("not_found");
-    expect((await attacker.client.rpc("send_friend_request", { p_username: victim.username })).data).toBe("sent");
-    const { data: reqs } = await victim.client.rpc("list_friend_requests");
-    const incoming = (reqs as { id: string; direction: string }[]).find((r) => r.direction === "incoming")!;
+    expect(await friendAction(attacker, { action: "send", username: attacker.username })).toBe("self");
+    expect(await friendAction(attacker, { action: "send", username: "no_such_user_zz" })).toBe("not_found");
+    expect(await friendAction(attacker, { action: "send", username: victim.username })).toBe("sent");
+    const { requests } = await getFriends(victim);
+    const incoming = (requests as { id: string; direction: string }[]).find((r) => r.direction === "incoming")!;
     // The sender can't accept their own request.
-    expect((await attacker.client.rpc("respond_friend_request", { p_request_id: incoming.id, p_accept: true })).data).toBe("not_found");
-    expect((await victim.client.rpc("respond_friend_request", { p_request_id: incoming.id, p_accept: true })).data).toBe("accepted");
-    const { data: friends } = await attacker.client.rpc("get_friends_overview");
+    expect(await friendAction(attacker, { action: "respond", requestId: incoming.id, accept: true })).toBe("not_found");
+    expect(await friendAction(victim, { action: "respond", requestId: incoming.id, accept: true })).toBe("accepted");
+    const { friends } = await getFriends(attacker);
     expect((friends as { friend_id: string }[]).map((f) => f.friend_id)).toContain(victim.id);
-    const { data: board, error } = await attacker.client.rpc("get_leaderboard", { p_period: "all", p_metric: "xp", p_scope: "friends", p_limit: 50 });
-    expect(error).toBeNull();
-    const rows = board as { user_id: string; xp: number; is_me: boolean }[];
+    const rows = (await getLeaderboard(attacker, { period: "all", metric: "xp", scope: "friends" })) as { user_id: string; xp: number }[];
     expect(rows.find((r) => r.user_id === victim.id)?.xp).toBe(50);
     expect(JSON.stringify(rows)).not.toContain("@example.com");
   });
 
-  it("blocks signed-out callers from leaderboards and anonymous guests from friends", async () => {
-    const anon = createClient(URL!, ANON!, opts);
-    expect((await anon.rpc("get_leaderboard", {})).error).toBeTruthy();
-    const guest = createClient(URL!, ANON!, opts);
-    const { error } = await guest.auth.signInAnonymously();
-    if (!error) expect((await guest.rpc("send_friend_request", { p_username: victim.username })).error).toBeTruthy();
+  it("blocks guests from friends features", async () => {
+    const guest = await makeUser("Guest", { guest: true });
+    await expect(friendAction(guest, { action: "send", username: victim.username })).rejects.toMatchObject({ status: 403 });
+  });
+
+  it("deleting a user removes all of their data", async () => {
+    const temp = await makeUser("Temp");
+    await query("delete from public.users where id = $1", [temp.id]);
+    expect(await maybeOne("select 1 from public.profiles where id = $1", [temp.id])).toBeNull();
+    expect(await maybeOne("select 1 from public.user_preferences where user_id = $1", [temp.id])).toBeNull();
   });
 });

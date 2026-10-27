@@ -1,4 +1,4 @@
-import type { SupabaseClient, User } from "@supabase/supabase-js";
+import type { PoolClient } from "pg";
 import { getQuestion, toPublicQuestion } from "@/lib/content/bank";
 import { getTrack } from "@/lib/content/catalog";
 import { formatCorrectAnswer, isResponseCorrect, sanitizeResponse } from "@/lib/content/grading";
@@ -23,8 +23,9 @@ import {
   type MatchPhase,
   type RoomSettings,
 } from "@/lib/multiplayer/rules";
-import { ApiError } from "@/lib/supabase/server";
-import { dbError } from "./http";
+import type { AuthUser } from "./auth";
+import { isUniqueViolation, json, maybeOne, query, tx } from "./db";
+import { ApiError } from "./errors";
 import { ensureQuestionBank } from "./question-sync";
 
 /** A member counts as connected if they polled or pinged within this window. */
@@ -82,6 +83,12 @@ interface ParticipantRow {
   rank: number | null;
   xp_awarded: number;
   joined_at: string;
+}
+interface HistoryRow {
+  user_id: string;
+  rank: number;
+  finished_at: string;
+  human_players: number;
 }
 interface AnswerRow {
   match_id: string;
@@ -173,36 +180,20 @@ function isOnline(member: MemberRow, now: number): boolean {
   return !member.left_at && now - new Date(member.last_seen_at).getTime() < ONLINE_WINDOW_MS;
 }
 
-export async function broadcastRoom(admin: SupabaseClient, code: string, reason: string): Promise<void> {
-  const channel = admin.channel(`room:${code}`, { config: { private: true } });
-  try {
-    await channel.httpSend("state", { reason, at: Date.now() }, { timeout: 3000 });
-  } catch (err) {
-    // Clients also poll, so a failed broadcast only delays updates.
-    console.warn("[realtime] broadcast failed", err);
-  } finally {
-    await admin.removeChannel(channel);
-  }
-}
-
-async function loadRoom(admin: SupabaseClient, rawCode: string): Promise<RoomRow> {
+async function loadRoom(rawCode: string): Promise<RoomRow> {
   const code = normalizeRoomCode(rawCode);
   if (!code) throw new ApiError(400, "invalid_code", "Room codes are 6 letters or numbers, like K7Q2MZ.");
-  const { data, error } = await admin.from("multiplayer_rooms").select("*").eq("code", code).maybeSingle();
-  if (error) dbError(error, "load room");
-  const room = data as RoomRow | null;
+  const room = await maybeOne<RoomRow>("select * from public.multiplayer_rooms where code = $1", [code]);
   if (!room || room.status === "closed") throw new ApiError(404, "room_not_found", "We couldn't find an open room with that code. Check the code or ask your host for a new one.");
   if (new Date(room.expires_at).getTime() < Date.now()) {
-    await admin.from("multiplayer_rooms").update({ status: "closed" }).eq("id", room.id);
+    await query("update public.multiplayer_rooms set status = 'closed' where id = $1", [room.id]);
     throw new ApiError(410, "room_expired", "This room has expired. Ask your host to create a new one.");
   }
   return room;
 }
 
-async function loadMembers(admin: SupabaseClient, roomId: string): Promise<MemberRow[]> {
-  const { data, error } = await admin.from("room_members").select("*").eq("room_id", roomId).order("joined_at");
-  if (error) dbError(error, "load members");
-  return (data ?? []) as MemberRow[];
+async function loadMembers(roomId: string): Promise<MemberRow[]> {
+  return query<MemberRow>("select * from public.room_members where room_id = $1 order by joined_at", [roomId]);
 }
 
 function requireMember(members: MemberRow[], userId: string, opts: { active?: boolean } = {}): MemberRow {
@@ -211,57 +202,62 @@ function requireMember(members: MemberRow[], userId: string, opts: { active?: bo
   return me;
 }
 
-async function touchRoom(admin: SupabaseClient, roomId: string, patch: Partial<RoomRow> = {}) {
+async function touchRoom(roomId: string, patch: { settings?: RoomSettings; host_id?: string } = {}) {
   const expires = new Date(Date.now() + ROOM_TTL_HOURS * 3_600_000).toISOString();
-  const { error } = await admin.from("multiplayer_rooms").update({ last_activity_at: new Date().toISOString(), expires_at: expires, ...patch }).eq("id", roomId);
-  if (error) dbError(error, "touch room");
+  await query(
+    `update public.multiplayer_rooms
+        set last_activity_at = now(), expires_at = $2,
+            settings = coalesce($3::jsonb, settings), host_id = coalesce($4::uuid, host_id)
+      where id = $1`,
+    [roomId, expires, patch.settings ? json(patch.settings) : null, patch.host_id ?? null],
+  );
 }
 
-async function resolveDisplayName(admin: SupabaseClient, user: User, requested: unknown): Promise<string> {
+function resolveDisplayName(user: AuthUser, requested: unknown): string {
   if (typeof requested === "string" && requested.trim()) return displayNameSchema.parse(requested);
-  const { data } = await admin.from("profiles").select("display_name").eq("id", user.id).maybeSingle();
-  return (data?.display_name as string | undefined) ?? "Player";
+  return user.displayName || "Player";
 }
 
-export async function createRoom(admin: SupabaseClient, user: User, body: { settings: unknown; displayName?: unknown }) {
+export async function createRoom(user: AuthUser, body: { settings: unknown; displayName?: unknown }) {
   const settings = roomSettingsSchema.parse(body.settings);
   if (!getTrack(settings.track)) throw new ApiError(400, "unknown_track", "That exam or course does not exist.");
-  const displayName = await resolveDisplayName(admin, user, body.displayName);
-  await ensureQuestionBank(admin);
+  const displayName = resolveDisplayName(user, body.displayName);
+  await ensureQuestionBank();
 
   // Durable spam protection: at most 10 rooms per user per hour.
-  const { count, error: countError } = await admin
-    .from("multiplayer_rooms")
-    .select("id", { count: "exact", head: true })
-    .eq("host_id", user.id)
-    .gte("created_at", new Date(Date.now() - 3_600_000).toISOString());
-  if (countError) dbError(countError, "count rooms");
-  if ((count ?? 0) >= 10) throw new ApiError(429, "rate_limited", "You've created several rooms recently. Reuse an existing room or try again in a bit.");
+  const recent = await maybeOne<{ n: number }>(
+    "select count(*)::int as n from public.multiplayer_rooms where host_id = $1 and created_at >= now() - interval '1 hour'",
+    [user.id],
+  );
+  if ((recent?.n ?? 0) >= 10) throw new ApiError(429, "rate_limited", "You've created several rooms recently. Reuse an existing room or try again in a bit.");
 
-  if (Math.random() < 0.2) await admin.rpc("cleanup_stale_rooms");
+  if (Math.random() < 0.2) await query("select public.cleanup_stale_rooms()");
   // Close this host's previous open lobbies so abandoned rooms don't pile up.
-  await admin.from("multiplayer_rooms").update({ status: "closed" }).eq("host_id", user.id).eq("status", "lobby");
+  await query("update public.multiplayer_rooms set status = 'closed' where host_id = $1 and status = 'lobby'", [user.id]);
 
   for (let attempt = 0; attempt < 6; attempt++) {
     const code = generateRoomCode();
     const id = randomId();
-    const { error } = await admin.from("multiplayer_rooms").insert({ id, code, host_id: user.id, settings });
-    if (error) {
-      if (error.code === "23505") continue; // code collision, try another
-      dbError(error, "create room");
+    try {
+      await tx(async (client) => {
+        await client.query("insert into public.multiplayer_rooms (id, code, host_id, settings) values ($1, $2, $3, $4::jsonb)", [id, code, user.id, json(settings)]);
+        await client.query(
+          "insert into public.room_members (room_id, user_id, display_name, role, is_ready) values ($1, $2, $3, 'host', true)",
+          [id, user.id, displayName],
+        );
+      });
+    } catch (err) {
+      if (isUniqueViolation(err)) continue; // code collision, try another
+      throw err;
     }
-    const { error: memberError } = await admin
-      .from("room_members")
-      .insert({ room_id: id, user_id: user.id, display_name: displayName, role: "host", is_ready: true });
-    if (memberError) dbError(memberError, "add host");
     return { code };
   }
   throw new ApiError(503, "code_exhausted", "Couldn't generate a room code. Please try again.");
 }
 
-export async function previewRoom(admin: SupabaseClient, rawCode: string): Promise<RoomPreview> {
-  const room = await loadRoom(admin, rawCode);
-  const members = await loadMembers(admin, room.id);
+export async function previewRoom(rawCode: string): Promise<RoomPreview> {
+  const room = await loadRoom(rawCode);
+  const members = await loadMembers(room.id);
   const host = members.find((m) => m.user_id === room.host_id);
   return {
     code: room.code,
@@ -273,82 +269,78 @@ export async function previewRoom(admin: SupabaseClient, rawCode: string): Promi
   };
 }
 
-export async function joinRoom(admin: SupabaseClient, user: User, rawCode: string, requestedName: unknown) {
-  const room = await loadRoom(admin, rawCode);
-  const members = await loadMembers(admin, room.id);
+export async function joinRoom(user: AuthUser, rawCode: string, requestedName: unknown) {
+  const room = await loadRoom(rawCode);
+  const members = await loadMembers(room.id);
   const existing = members.find((m) => m.user_id === user.id);
-  const displayName = await resolveDisplayName(admin, user, requestedName ?? existing?.display_name);
+  const displayName = resolveDisplayName(user, requestedName ?? existing?.display_name);
   const now = new Date().toISOString();
 
   if (existing) {
     // Reconnect: existing members can always come back to their room.
-    const { error } = await admin
-      .from("room_members")
-      .update({ left_at: null, last_seen_at: now, display_name: displayName })
-      .eq("room_id", room.id)
-      .eq("user_id", user.id);
-    if (error) dbError(error, "rejoin");
+    await query("update public.room_members set left_at = null, last_seen_at = $3, display_name = $4 where room_id = $1 and user_id = $2", [
+      room.id,
+      user.id,
+      now,
+      displayName,
+    ]);
   } else {
     if (room.status === "playing") throw new ApiError(409, "in_progress", "A match is already in progress in this room. You can join when it ends.");
     const active = members.filter((m) => !m.left_at).length;
     if (active >= room.settings.maxPlayers) throw new ApiError(409, "room_full", `This room is full (${room.settings.maxPlayers} players).`);
-    const { error } = await admin.from("room_members").insert({ room_id: room.id, user_id: user.id, display_name: displayName, role: "player" });
-    if (error && error.code !== "23505") dbError(error, "join");
+    await query(
+      "insert into public.room_members (room_id, user_id, display_name, role) values ($1, $2, $3, 'player') on conflict do nothing",
+      [room.id, user.id, displayName],
+    );
   }
-  await touchRoom(admin, room.id);
-  await broadcastRoom(admin, room.code, "join");
+  await touchRoom(room.id);
   return { code: room.code };
 }
 
-export async function setReady(admin: SupabaseClient, user: User, rawCode: string, ready: boolean) {
-  const room = await loadRoom(admin, rawCode);
-  const members = await loadMembers(admin, room.id);
+export async function setReady(user: AuthUser, rawCode: string, ready: boolean) {
+  const room = await loadRoom(rawCode);
+  const members = await loadMembers(room.id);
   requireMember(members, user.id, { active: true });
   if (room.status === "playing") throw new ApiError(409, "in_progress", "You can't change ready status during a match.");
-  const { error } = await admin.from("room_members").update({ is_ready: ready, last_seen_at: new Date().toISOString() }).eq("room_id", room.id).eq("user_id", user.id);
-  if (error) dbError(error, "ready");
-  await broadcastRoom(admin, room.code, "ready");
+  await query("update public.room_members set is_ready = $3, last_seen_at = now() where room_id = $1 and user_id = $2", [room.id, user.id, ready]);
   return { ok: true };
 }
 
-export async function updateRoomSettings(admin: SupabaseClient, user: User, rawCode: string, rawSettings: unknown) {
-  const room = await loadRoom(admin, rawCode);
+export async function updateRoomSettings(user: AuthUser, rawCode: string, rawSettings: unknown) {
+  const room = await loadRoom(rawCode);
   if (room.host_id !== user.id) throw new ApiError(403, "not_host", "Only the host can change room settings.");
   if (room.status === "playing") throw new ApiError(409, "in_progress", "Settings can't change during a match.");
   const settings = roomSettingsSchema.parse(rawSettings);
   if (!getTrack(settings.track)) throw new ApiError(400, "unknown_track", "That exam or course does not exist.");
-  await touchRoom(admin, room.id, { settings });
+  await touchRoom(room.id, { settings });
   // Players must re-confirm readiness after settings change.
-  await admin.from("room_members").update({ is_ready: false }).eq("room_id", room.id).neq("user_id", room.host_id);
-  await broadcastRoom(admin, room.code, "settings");
+  await query("update public.room_members set is_ready = false where room_id = $1 and user_id <> $2", [room.id, room.host_id]);
 }
 
-export async function leaveRoom(admin: SupabaseClient, user: User, rawCode: string) {
-  const room = await loadRoom(admin, rawCode);
-  const members = await loadMembers(admin, room.id);
+export async function leaveRoom(user: AuthUser, rawCode: string) {
+  const room = await loadRoom(rawCode);
+  const members = await loadMembers(room.id);
   requireMember(members, user.id);
   const now = new Date().toISOString();
-  const { error } = await admin.from("room_members").update({ left_at: now, is_ready: false }).eq("room_id", room.id).eq("user_id", user.id);
-  if (error) dbError(error, "leave");
+  await query("update public.room_members set left_at = $3, is_ready = false where room_id = $1 and user_id = $2", [room.id, user.id, now]);
   if (room.host_id === user.id) {
     const nextHost = members.find((m) => m.user_id !== user.id && !m.left_at);
     if (nextHost) {
-      await admin.from("room_members").update({ role: "player" }).eq("room_id", room.id).eq("user_id", user.id);
-      await admin.from("room_members").update({ role: "host", is_ready: true }).eq("room_id", room.id).eq("user_id", nextHost.user_id);
-      await touchRoom(admin, room.id, { host_id: nextHost.user_id });
+      await query("update public.room_members set role = 'player' where room_id = $1 and user_id = $2", [room.id, user.id]);
+      await query("update public.room_members set role = 'host', is_ready = true where room_id = $1 and user_id = $2", [room.id, nextHost.user_id]);
+      await touchRoom(room.id, { host_id: nextHost.user_id });
     } else {
-      await admin.from("multiplayer_rooms").update({ status: "closed" }).eq("id", room.id);
+      await query("update public.multiplayer_rooms set status = 'closed' where id = $1", [room.id]);
     }
   }
-  await broadcastRoom(admin, room.code, "leave");
   return { ok: true };
 }
 
-export async function startMatch(admin: SupabaseClient, user: User, rawCode: string) {
-  const room = await loadRoom(admin, rawCode);
+export async function startMatch(user: AuthUser, rawCode: string) {
+  const room = await loadRoom(rawCode);
   if (room.host_id !== user.id) throw new ApiError(403, "not_host", "Only the host can start the match.");
   if (room.status === "playing") throw new ApiError(409, "in_progress", "A match is already running.");
-  const members = (await loadMembers(admin, room.id)).filter((m) => !m.left_at);
+  const members = (await loadMembers(room.id)).filter((m) => !m.left_at);
   const now = Date.now();
   const present = members.filter((m) => isOnline(m, now) || m.user_id === user.id);
   if (present.length < room.settings.minPlayers) {
@@ -356,7 +348,7 @@ export async function startMatch(admin: SupabaseClient, user: User, rawCode: str
   }
   const notReady = present.filter((m) => m.role !== "host" && !m.is_ready);
   if (notReady.length) throw new ApiError(409, "not_ready", `Waiting for ${notReady.map((m) => m.display_name).join(", ")} to get ready.`);
-  await ensureQuestionBank(admin);
+  await ensureQuestionBank();
 
   const matchId = randomId();
   const settings = room.settings;
@@ -376,76 +368,68 @@ export async function startMatch(admin: SupabaseClient, user: User, rawCode: str
   );
   if (questionIds.length === 0) throw new ApiError(400, "no_questions", "No questions match this room's settings. Try a broader topic or difficulty.");
 
-  const { data: prev } = await admin.from("multiplayer_matches").select("round").eq("room_id", room.id).order("round", { ascending: false }).limit(1).maybeSingle();
   const startedAt = new Date(now);
-  const { error: matchError } = await admin.from("multiplayer_matches").insert({
-    id: matchId,
-    room_id: room.id,
-    round: ((prev?.round as number | undefined) ?? 0) + 1,
-    phase: "countdown",
-    current_index: 0,
-    phase_started_at: startedAt.toISOString(),
-    phase_ends_at: new Date(now + COUNTDOWN_MS).toISOString(),
-    question_count: questionIds.length,
-    seconds_per_question: settings.secondsPerQuestion,
-    scoring: settings.scoring,
-    settings,
-    human_players: present.length,
-    started_at: startedAt.toISOString(),
+  const claimed = await tx(async (client) => {
+    // Lock the room row: only one start can win, and it sees the latest status.
+    const { rows } = await client.query<{ status: RoomRow["status"] }>("select status from public.multiplayer_rooms where id = $1 for update", [room.id]);
+    if (rows[0]?.status === "playing") return false;
+    await client.query(
+      `insert into public.multiplayer_matches
+         (id, room_id, round, phase, current_index, phase_started_at, phase_ends_at, question_count, seconds_per_question, scoring, settings, human_players, started_at)
+       values ($1, $2, (select coalesce(max(round), 0) + 1 from public.multiplayer_matches where room_id = $2), 'countdown', 0, $3, $4, $5, $6, $7, $8::jsonb, $9, $3)`,
+      [
+        matchId,
+        room.id,
+        startedAt.toISOString(),
+        new Date(now + COUNTDOWN_MS).toISOString(),
+        questionIds.length,
+        settings.secondsPerQuestion,
+        settings.scoring,
+        json(settings),
+        present.length,
+      ],
+    );
+    await client.query(
+      "insert into public.match_questions (match_id, position, question_id) select $1, q.ord - 1, q.id from unnest($2::text[]) with ordinality as q(id, ord)",
+      [matchId, questionIds],
+    );
+    await client.query(
+      "insert into public.match_participants (match_id, user_id, display_name) select $1, p.user_id, p.display_name from unnest($2::uuid[], $3::text[]) as p(user_id, display_name)",
+      [matchId, present.map((m) => m.user_id), present.map((m) => m.display_name)],
+    );
+    await client.query("update public.multiplayer_rooms set status = 'playing', current_match_id = $2, last_activity_at = $3 where id = $1", [
+      room.id,
+      matchId,
+      startedAt.toISOString(),
+    ]);
+    await client.query("update public.room_members set is_ready = false where room_id = $1 and user_id <> $2", [room.id, room.host_id]);
+    return true;
   });
-  if (matchError) {
-    if (matchError.code === "23505") throw new ApiError(409, "in_progress", "A match was just started.");
-    dbError(matchError, "create match");
-  }
-  const { error: qError } = await admin.from("match_questions").insert(questionIds.map((qid, position) => ({ match_id: matchId, position, question_id: qid })));
-  if (qError) dbError(qError, "match questions");
-  const { error: pError } = await admin
-    .from("match_participants")
-    .insert(present.map((m) => ({ match_id: matchId, user_id: m.user_id, display_name: m.display_name })));
-  if (pError) dbError(pError, "participants");
-  // Only one match can be current: this conditional update fails if another start won the race.
-  const { data: claimed, error: roomError } = await admin
-    .from("multiplayer_rooms")
-    .update({ status: "playing", current_match_id: matchId, last_activity_at: startedAt.toISOString() })
-    .eq("id", room.id)
-    .neq("status", "playing")
-    .select("id");
-  if (roomError) dbError(roomError, "start room");
-  if (!claimed?.length) {
-    await admin.from("multiplayer_matches").delete().eq("id", matchId);
-    throw new ApiError(409, "in_progress", "A match was just started.");
-  }
-  await admin.from("room_members").update({ is_ready: false }).eq("room_id", room.id).neq("user_id", room.host_id);
-  await broadcastRoom(admin, room.code, "start");
+  if (!claimed) throw new ApiError(409, "in_progress", "A match was just started.");
   return { matchId };
 }
 
-async function loadMatchBundle(admin: SupabaseClient, matchId: string) {
+async function loadMatchBundle(matchId: string) {
   const [match, questions, participants, answers] = await Promise.all([
-    admin.from("multiplayer_matches").select("*").eq("id", matchId).single(),
-    admin.from("match_questions").select("position, question_id").eq("match_id", matchId).order("position"),
-    admin.from("match_participants").select("*").eq("match_id", matchId),
-    admin.from("match_answers").select("*").eq("match_id", matchId),
+    maybeOne<MatchRow>("select * from public.multiplayer_matches where id = $1", [matchId]),
+    query<{ position: number; question_id: string }>("select position, question_id from public.match_questions where match_id = $1 order by position", [matchId]),
+    query<ParticipantRow>("select * from public.match_participants where match_id = $1", [matchId]),
+    query<AnswerRow>("select * from public.match_answers where match_id = $1", [matchId]),
   ]);
-  for (const r of [match, questions, participants, answers]) if (r.error) dbError(r.error, "load match");
-  return {
-    match: match.data as MatchRow,
-    questionIds: ((questions.data ?? []) as { position: number; question_id: string }[]).map((q) => q.question_id),
-    participants: (participants.data ?? []) as ParticipantRow[],
-    answers: (answers.data ?? []) as AnswerRow[],
-  };
+  if (!match) throw new ApiError(404, "match_not_found", "That match no longer exists.");
+  return { match, questionIds: questions.map((q) => q.question_id), participants, answers };
 }
 
 /**
  * Applies a due phase transition, if any. Conditional on the phase/index we
  * read, so concurrent callers can't double-advance. Returns true if changed.
  */
-async function advanceIfDue(admin: SupabaseClient, room: RoomRow, members: MemberRow[]): Promise<boolean> {
+async function advanceIfDue(room: RoomRow, members: MemberRow[]): Promise<boolean> {
   if (!room.current_match_id) return false;
-  const bundle = await loadMatchBundle(admin, room.current_match_id);
+  const bundle = await loadMatchBundle(room.current_match_id);
   const { match, participants, answers } = bundle;
   if (match.phase === "finished") {
-    if (!match.finalized_at) await finalizeMatch(admin, room, bundle);
+    if (!match.finalized_at) await finalizeMatch(room, bundle);
     return false;
   }
   const now = Date.now();
@@ -459,22 +443,24 @@ async function advanceIfDue(admin: SupabaseClient, room: RoomRow, members: Membe
   const next = nextClock(clock, allAnswered, now);
   if (!next) return false;
 
-  const { data: updated, error } = await admin
-    .from("multiplayer_matches")
-    .update({
-      phase: next.phase,
-      current_index: next.index,
-      phase_started_at: new Date(next.phaseStartedAt).toISOString(),
-      phase_ends_at: new Date(next.phaseEndsAt).toISOString(),
-      finished_at: next.phase === "finished" ? new Date(now).toISOString() : null,
-    })
-    .eq("id", match.id)
-    .eq("phase", match.phase)
-    .eq("current_index", match.current_index)
-    .select("*");
-  if (error) dbError(error, "advance");
-  if (!updated?.length) return false; // someone else advanced first
-  if (next.phase === "finished") await finalizeMatch(admin, room, { ...bundle, match: updated[0] as MatchRow });
+  const updated = await query<MatchRow>(
+    `update public.multiplayer_matches
+        set phase = $4, current_index = $5, phase_started_at = $6, phase_ends_at = $7, finished_at = $8
+      where id = $1 and phase = $2 and current_index = $3
+      returning *`,
+    [
+      match.id,
+      match.phase,
+      match.current_index,
+      next.phase,
+      next.index,
+      new Date(next.phaseStartedAt).toISOString(),
+      new Date(next.phaseEndsAt).toISOString(),
+      next.phase === "finished" ? new Date(now).toISOString() : null,
+    ],
+  );
+  if (!updated.length) return false; // someone else advanced first
+  if (next.phase === "finished") await finalizeMatch(room, { ...bundle, match: updated[0]! });
   return true;
 }
 
@@ -490,7 +476,6 @@ function bestStreakFor(userId: string, count: number, answers: AnswerRow[]): num
 }
 
 async function finalizeMatch(
-  admin: SupabaseClient,
   room: RoomRow,
   bundle: { match: MatchRow; participants: ParticipantRow[]; answers: AnswerRow[] },
 ) {
@@ -501,16 +486,16 @@ async function finalizeMatch(
   const humanPlayers = match.human_players;
   const userIds = participants.map((p) => p.user_id);
   const [history, earned, prefs] = await Promise.all([
-    admin
-      .from("match_participants")
-      .select("user_id, rank, multiplayer_matches!inner(finished_at, human_players, finalized_at)")
-      .in("user_id", userIds)
-      .neq("match_id", match.id)
-      .not("rank", "is", null),
-    admin.from("user_achievements").select("user_id, achievement_id").in("user_id", userIds),
-    admin.from("user_preferences").select("user_id, timezone").in("user_id", userIds),
+    query<HistoryRow>(
+      `select mp.user_id, mp.rank, m.finished_at, m.human_players
+         from public.match_participants mp
+         join public.multiplayer_matches m on m.id = mp.match_id
+        where mp.user_id = any($1::uuid[]) and mp.match_id <> $2 and mp.rank is not null`,
+      [userIds, match.id],
+    ),
+    query<{ user_id: string; achievement_id: string }>("select user_id, achievement_id from public.user_achievements where user_id = any($1::uuid[])", [userIds]),
+    query<{ user_id: string; timezone: string }>("select user_id, timezone from public.user_preferences where user_id = any($1::uuid[])", [userIds]),
   ]);
-  type HistoryRow = { user_id: string; rank: number; multiplayer_matches: { finished_at: string; human_players: number } };
   const finishedAt = match.finished_at ?? new Date().toISOString();
 
   const participantsPayload: { user_id: string; rank: number; best_streak: number; xp: number }[] = [];
@@ -524,49 +509,48 @@ async function finalizeMatch(
     participantsPayload.push({ user_id: p.user_id, rank: r.rank, best_streak: bestStreakFor(p.user_id, match.question_count, answers), xp: rewards.total });
     for (const a of rewards.awards) xpPayload.push({ user_id: p.user_id, reason: a.reason, amount: a.amount });
 
-    const past = ((history.data ?? []) as unknown as HistoryRow[]).filter((h) => h.user_id === p.user_id);
+    const past = history.filter((h) => h.user_id === p.user_id);
     const matches = [
-      ...past.map((h) => ({ finishedAt: h.multiplayer_matches.finished_at, won: h.rank === 1 && h.multiplayer_matches.human_players >= 2, humanPlayers: h.multiplayer_matches.human_players })),
+      ...past.map((h) => ({ finishedAt: h.finished_at, won: h.rank === 1 && h.human_players >= 2, humanPlayers: h.human_players })),
       { finishedAt, won: r.rank === 1 && humanPlayers >= 2, humanPlayers },
     ].map((m, i) => ({ matchId: String(i), roomCode: null, kind: "online" as const, rank: 0, players: m.humanPlayers, score: 0, correct: 0, total: 0, xpTotal: 0, ...m }));
-    const have = new Set(((earned.data ?? []) as { user_id: string; achievement_id: string }[]).filter((e) => e.user_id === p.user_id).map((e) => e.achievement_id));
+    const have = new Set(earned.filter((e) => e.user_id === p.user_id).map((e) => e.achievement_id));
     for (const id of qualifyingAchievements({ results: [], matches, weeklyMinutes: 0, weeklyGoalMinutes: 0, currentStreak: 0 })) {
       if (!have.has(id)) achievementPayload.push({ user_id: p.user_id, achievement_id: id });
     }
-    const tz = ((prefs.data ?? []) as { user_id: string; timezone: string }[]).find((x) => x.user_id === p.user_id)?.timezone ?? "UTC";
+    const tz = prefs.find((x) => x.user_id === p.user_id)?.timezone ?? "UTC";
     activityPayload.push({ user_id: p.user_id, activity_date: localDateKey(finishedAt, tz), questions: p.answered, correct: p.correct, xp: rewards.total });
   }
 
-  const { error } = await admin.rpc("finalize_match", {
-    p_match_id: match.id,
-    p_participants: participantsPayload,
-    p_xp: xpPayload,
-    p_achievements: achievementPayload,
-    p_activity: activityPayload,
+  await tx(async (client: PoolClient) => {
+    await client.query("select public.finalize_match($1, $2::jsonb, $3::jsonb, $4::jsonb, $5::jsonb)", [
+      match.id,
+      json(participantsPayload),
+      json(xpPayload),
+      json(achievementPayload),
+      json(activityPayload),
+    ]);
+    await client.query("update public.multiplayer_rooms set status = 'finished', last_activity_at = now() where id = $1 and current_match_id = $2", [room.id, match.id]);
   });
-  if (error) dbError(error, "finalize match");
-  await admin.from("multiplayer_rooms").update({ status: "finished", last_activity_at: new Date().toISOString() }).eq("id", room.id).eq("current_match_id", match.id);
 }
 
-export async function submitMatchAnswer(admin: SupabaseClient, user: User, rawCode: string, body: { matchId?: unknown; index?: unknown; response?: unknown }) {
-  const room = await loadRoom(admin, rawCode);
+export async function submitMatchAnswer(user: AuthUser, rawCode: string, body: { matchId?: unknown; index?: unknown; response?: unknown }) {
+  const room = await loadRoom(rawCode);
   if (typeof body.matchId !== "string" || body.matchId !== room.current_match_id) {
     throw new ApiError(409, "stale_match", "That match is no longer active.");
   }
   if (typeof body.index !== "number" || !Number.isInteger(body.index)) throw new ApiError(400, "invalid_input", "Missing question index.");
-  const members = await loadMembers(admin, room.id);
+  const members = await loadMembers(room.id);
   requireMember(members, user.id, { active: true });
 
-  const { data: matchData, error: matchError } = await admin.from("multiplayer_matches").select("*").eq("id", room.current_match_id).single();
-  if (matchError) dbError(matchError, "load match");
-  const match = matchData as MatchRow;
+  const match = await maybeOne<MatchRow>("select * from public.multiplayer_matches where id = $1", [room.current_match_id]);
+  if (!match) throw new ApiError(409, "stale_match", "That match is no longer active.");
   const now = Date.now();
   const check = canAcceptAnswer(clockOf(match), body.index, now);
   if (!check.ok) throw new ApiError(409, "answer_closed", check.reason);
 
-  const { data: mq, error: mqError } = await admin.from("match_questions").select("question_id").eq("match_id", match.id).eq("position", body.index).single();
-  if (mqError) dbError(mqError, "load match question");
-  const question = getQuestion(mq.question_id as string);
+  const mq = await maybeOne<{ question_id: string }>("select question_id from public.match_questions where match_id = $1 and position = $2", [match.id, body.index]);
+  const question = mq ? getQuestion(mq.question_id) : undefined;
   if (!question) throw new ApiError(500, "missing_question", "This question is no longer available.");
   const response = sanitizeResponse(question, body.response);
   if (!response) throw new ApiError(400, "invalid_answer", "Choose an answer before submitting.");
@@ -574,53 +558,50 @@ export async function submitMatchAnswer(admin: SupabaseClient, user: User, rawCo
   const correct = isResponseCorrect(question, response);
   const responseMs = Math.max(0, now - new Date(match.phase_started_at).getTime());
   const points = pointsFor(correct, responseMs, match.seconds_per_question * 1000, match.scoring);
-  const { data: status, error } = await admin.rpc("record_match_answer", {
-    p_match_id: match.id,
-    p_position: body.index,
-    p_user_id: user.id,
-    p_response: response,
-    p_is_correct: correct,
-    p_points: points,
-    p_response_ms: responseMs,
-  });
-  if (error) dbError(error, "record answer");
+  const recorded = await maybeOne<{ status: string }>("select public.record_match_answer($1, $2, $3, $4::jsonb, $5, $6, $7) as status", [
+    match.id,
+    body.index,
+    user.id,
+    json(response),
+    correct,
+    points,
+    responseMs,
+  ]);
+  const status = recorded?.status;
   if (status === "duplicate") throw new ApiError(409, "duplicate_answer", "You already answered this question. Answers can't be changed.");
   if (status === "not_participant") throw new ApiError(403, "not_participant", "You joined after this match started, so you're spectating this round.");
   if (status !== "ok") throw new ApiError(409, "answer_closed", "Time is up for this question.");
 
-  await admin.from("room_members").update({ last_seen_at: new Date().toISOString() }).eq("room_id", room.id).eq("user_id", user.id);
-  const refreshedMembers = await loadMembers(admin, room.id);
-  await advanceIfDue(admin, room, refreshedMembers);
-  await broadcastRoom(admin, room.code, "answer");
+  await query("update public.room_members set last_seen_at = now() where room_id = $1 and user_id = $2", [room.id, user.id]);
+  const refreshedMembers = await loadMembers(room.id);
+  await advanceIfDue(room, refreshedMembers);
   // Correctness is not revealed until the reveal phase.
   return { accepted: true };
 }
 
-export async function advanceRoom(admin: SupabaseClient, user: User, rawCode: string) {
-  const room = await loadRoom(admin, rawCode);
-  const members = await loadMembers(admin, room.id);
+export async function advanceRoom(user: AuthUser, rawCode: string) {
+  const room = await loadRoom(rawCode);
+  const members = await loadMembers(room.id);
   requireMember(members, user.id);
-  const changed = await advanceIfDue(admin, room, members);
-  if (changed) await broadcastRoom(admin, room.code, "advance");
+  const changed = await advanceIfDue(room, members);
   return { changed };
 }
 
-export async function getRoomState(admin: SupabaseClient, user: User, rawCode: string): Promise<{ state: RoomState } | { preview: RoomPreview }> {
-  let room = await loadRoom(admin, rawCode);
-  let members = await loadMembers(admin, room.id);
+export async function getRoomState(user: AuthUser, rawCode: string): Promise<{ state: RoomState } | { preview: RoomPreview }> {
+  let room = await loadRoom(rawCode);
+  let members = await loadMembers(room.id);
   const me = members.find((m) => m.user_id === user.id);
-  if (!me || me.left_at) return { preview: await previewRoom(admin, room.code) };
+  if (!me || me.left_at) return { preview: await previewRoom(room.code) };
 
   const now = Date.now();
   if (now - new Date(me.last_seen_at).getTime() > LAST_SEEN_THROTTLE_MS) {
-    await admin.from("room_members").update({ last_seen_at: new Date(now).toISOString() }).eq("room_id", room.id).eq("user_id", user.id);
+    await query("update public.room_members set last_seen_at = $3 where room_id = $1 and user_id = $2", [room.id, user.id, new Date(now).toISOString()]);
     me.last_seen_at = new Date(now).toISOString();
   }
   // Lazy, server-validated progression: any member's poll can apply a due transition.
-  if (room.status === "playing" && (await advanceIfDue(admin, room, members))) {
-    await broadcastRoom(admin, room.code, "advance");
-    room = await loadRoom(admin, room.code);
-    members = await loadMembers(admin, room.id);
+  if (room.status === "playing" && (await advanceIfDue(room, members))) {
+    room = await loadRoom(room.code);
+    members = await loadMembers(room.id);
   }
 
   const memberViews: RoomMemberView[] = members
@@ -636,7 +617,7 @@ export async function getRoomState(admin: SupabaseClient, user: User, rawCode: s
   };
 
   if (room.current_match_id && (room.status === "playing" || room.status === "finished")) {
-    const { match, questionIds, participants, answers } = await loadMatchBundle(admin, room.current_match_id);
+    const { match, questionIds, participants, answers } = await loadMatchBundle(room.current_match_id);
     const index = match.current_index;
     const showQuestion = match.phase === "question" || match.phase === "reveal";
     const qid = questionIds[index];

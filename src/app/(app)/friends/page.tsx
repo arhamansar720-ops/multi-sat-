@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState, ErrorState } from "@/components/ui/states";
+import { api, AppError } from "@/lib/data/repository";
 import { computeStreak, localDateKey } from "@/lib/progression/dates";
 import { levelInfo } from "@/lib/progression/xp";
 import { relativeTime } from "@/lib/utils";
@@ -59,7 +60,7 @@ export default function FriendsPage() {
 }
 
 function FriendsView() {
-  const { supabase, activity } = useApp();
+  const { activity } = useApp();
   const [friends, setFriends] = React.useState<FriendRow[] | null>(null);
   const [requests, setRequests] = React.useState<RequestRow[]>([]);
   const [error, setError] = React.useState<string | null>(null);
@@ -68,36 +69,36 @@ function FriendsView() {
   const [removing, setRemoving] = React.useState<FriendRow | null>(null);
 
   const load = React.useCallback(async () => {
-    if (!supabase) return;
-    const [f, r] = await Promise.all([supabase.rpc("get_friends_overview"), supabase.rpc("list_friend_requests")]);
-    if (f.error || r.error) {
-      setError("Couldn't load your friends. Please try again.");
-      return;
+    try {
+      const data = await api<{ friends: FriendRow[]; requests: RequestRow[] }>("/api/friends");
+      setError(null);
+      setFriends(data.friends);
+      setRequests(data.requests);
+    } catch (err) {
+      setError(err instanceof AppError && err.code === "registered_only" ? err.message : "Couldn't load your friends. Please try again.");
     }
-    setError(null);
-    setFriends((f.data ?? []) as FriendRow[]);
-    setRequests((r.data ?? []) as RequestRow[]);
-  }, [supabase]);
+  }, []);
   React.useEffect(() => void load(), [load]);
 
-  const rpc = async (key: string, fn: string, args: Record<string, unknown>) => {
-    if (!supabase) return null;
+  const act = async (key: string, action: Record<string, unknown>) => {
     setBusy(key);
-    const { data, error: err } = await supabase.rpc(fn, args);
-    setBusy(null);
-    if (err) {
-      toast.error(err.message || "That didn't work.");
+    try {
+      const { result } = await api<{ result: string }>("/api/friends", { method: "POST", json: action });
+      await load();
+      return result;
+    } catch (err) {
+      toast.error(err instanceof AppError ? err.message : "That didn't work.");
       return null;
+    } finally {
+      setBusy(null);
     }
-    await load();
-    return data as string;
   };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = username.trim().replace(/^@/, "");
     if (!/^[A-Za-z0-9_]{3,20}$/.test(name)) return toast.error("Usernames are 3-20 letters, numbers, or underscores.");
-    const result = await rpc("send", "send_friend_request", { p_username: name });
+    const result = await act("send", { action: "send", username: name });
     if (result) {
       (result === "sent" || result === "accepted" ? toast.success : toast.error)(SEND_MESSAGES[result] ?? result);
       if (result === "sent" || result === "accepted") setUsername("");
@@ -126,10 +127,10 @@ function FriendsView() {
                       <p className="font-medium">{r.display_name}</p>
                       <p className="text-xs text-muted-foreground">@{r.username} · {relativeTime(r.created_at)}</p>
                     </div>
-                    <Button size="sm" variant="success" onClick={() => rpc(`acc-${r.id}`, "respond_friend_request", { p_request_id: r.id, p_accept: true }).then((x) => x && toast.success("Friend added"))} disabled={busy !== null}>
+                    <Button size="sm" variant="success" onClick={() => act(`acc-${r.id}`, { action: "respond", requestId: r.id, accept: true }).then((x) => x && toast.success("Friend added"))} disabled={busy !== null}>
                       {busy === `acc-${r.id}` ? <Loader2 className="animate-spin" /> : <Check />} Accept
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => rpc(`dec-${r.id}`, "respond_friend_request", { p_request_id: r.id, p_accept: false })} disabled={busy !== null}>
+                    <Button size="sm" variant="outline" onClick={() => act(`dec-${r.id}`, { action: "respond", requestId: r.id, accept: false })} disabled={busy !== null}>
                       <X /> Decline
                     </Button>
                   </li>
@@ -218,7 +219,7 @@ function FriendsView() {
                 {outgoing.map((r) => (
                   <li key={r.id} className="flex items-center gap-2">
                     <span className="flex-1 truncate">{r.display_name} <span className="text-muted-foreground">@{r.username}</span></span>
-                    <Button size="sm" variant="ghost" onClick={() => rpc(`can-${r.id}`, "cancel_friend_request", { p_request_id: r.id })} disabled={busy !== null}>
+                    <Button size="sm" variant="ghost" onClick={() => act(`can-${r.id}`, { action: "cancel", requestId: r.id })} disabled={busy !== null}>
                       Cancel
                     </Button>
                   </li>
@@ -236,7 +237,7 @@ function FriendsView() {
         description="You'll stop seeing each other's activity and friend leaderboard entries. You can send a new request later."
         confirmLabel="Remove friend"
         destructive
-        onConfirm={() => removing && void rpc(`rm-${removing.friend_id}`, "remove_friend", { p_friend_id: removing.friend_id }).then((x) => x && toast.success("Friend removed"))}
+        onConfirm={() => removing && void act(`rm-${removing.friend_id}`, { action: "remove", friendId: removing.friend_id }).then((x) => x && toast.success("Friend removed"))}
       />
     </div>
   );
